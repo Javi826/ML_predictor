@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar  1 23:33:28 2024
+@author: javi
+"""
+
+import os
+import time
+import datetime
+import numpy as np
+import pandas as pd
+import psutil
+
+import yfinance as yf
+
+from modules.mod_init import *
+from paths.paths import file_df_data,folder_csv,path_file_csv,results_path,path_tra_val_results,file_tra_val_results, path_base,folder_tra_val_results
+from columns.columns import columns_csv_yahoo,columns_clean_order
+from functions.def_functions import set_seeds, class_weight,plots_histograms,plot_loss, plot_accu
+from modules.mod_dtset_clean import mod_dtset_clean
+from modules.mod_preprocessing import mod_preprocessing
+from modules.mod_pipeline import mod_pipeline
+
+import tensorflow as tf
+from tensorflow.python.client import device_lib
+from keras.models import Model
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint, EarlyStopping,TensorBoard
+from keras.layers import LSTM, Dense, Dropout, Input, Embedding, Reshape, concatenate, BatchNormalization
+from keras.regularizers import l2
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score,f1_score,recall_score,precision_score,confusion_matrix,roc_curve, roc_auc_score
+
+start_time = time.time()
+
+# YAHOO CALL + SAVE + READING file
+#------------------------------------------------------------------------------
+symbol = "^GSPC"
+start_date = "1980-01-01"
+endin_date = "2023-12-31"
+sp500_data = yf.download(symbol, start=start_date, end=endin_date)
+sp500_data.to_csv(path_file_csv)
+df_data = pd.read_csv(path_file_csv, header=None, skiprows=1, names=columns_csv_yahoo)
+
+#CALL module Datacleaning
+#------------------------------------------------------------------------------
+df_clean = mod_dtset_clean(df_data,start_date,endin_date)
+
+#CALL PREPROCESSING
+#------------------------------------------------------------------------------
+prepro_start_date = '2000-01-01'
+prepro_endin_date = '2019-12-31'
+lags = 5  
+
+df_preprocessing = mod_preprocessing(df_clean,prepro_start_date,prepro_endin_date,lags)
+
+#SPLIT DATA - CALL PIPELINE
+#------------------------------------------------------------------------------
+n_features = 1
+endin_data_train  = initn_data_valid  = ['2018-01-01']
+endin_data_valid  = '2018-12-31'
+    
+print(f"Starts Processing for lags = {lags} and initn_data_valid = {initn_data_valid}")
+print('\n')
+
+X_train_techi = mod_pipeline(df_preprocessing, endin_data_train, endin_data_valid,lags, n_features, 'X_train_techi')
+X_valid_techi = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_techi')
+#print(X_train_techi)
+
+X_train_dweek = mod_pipeline(df_preprocessing, endin_data_train, endin_data_valid,lags, n_features, 'X_train_dweek')
+X_valid_dweek = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_dweek')
+#print(X_train_dweek)
+
+X_train = [X_train_techi, X_train_dweek]
+X_valid = [X_valid_techi, X_valid_dweek]
+
+y_valid = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'y_valid')
+y_train = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'y_train')
+
+X_train = [X_train_techi, X_train_dweek]
+X_valid = [X_valid_techi, X_valid_dweek]
+
+
+#INPUTS LAYERS
+#------------------------------------------------------------------------------
+input_lags = Input(shape=(lags, n_features),name='input_lags')
+input_days = Input(shape=(1,),name='input_days')
+
+#VARIABLES
+#------------------------------------------------------------------------------
+dropout     = 0.2
+n_neurons_1 = 20
+n_neurons_2 = 10
+batch_s     = 32
+le_rate     = 0.001
+optimizers  = 'adam'
+#LSTM LAYERS
+#------------------------------------------------------------------------------
+#LSTM 1
+lstm_layer1 = LSTM(units=n_neurons_1, dropout=dropout, name='LSTM1', return_sequences=True)(input_lags)
+#LSTM 2
+lstm_layer2 = LSTM(units=n_neurons_2, dropout=dropout, name='LSTM2')(lstm_layer1)
+
+#EMBEDDINGS LAYER
+#------------------------------------------------------------------------------
+day_week_embedding = Embedding(input_dim=5, output_dim=5)(input_days)
+day_week_embedding = Reshape(target_shape=(5,))(day_week_embedding)
+
+#CONCATENATE MODEL + BATCHNORMALIZATION
+#------------------------------------------------------------------------------
+concatenated     = concatenate([lstm_layer2, day_week_embedding])
+batch_normalized = BatchNormalization()(concatenated)
+
+#DENSE LAYER
+#------------------------------------------------------------------------------
+denses_layer = Dense(10, activation='relu')(batch_normalized)
+output_layer = Dense(1,  activation='sigmoid', name='output')(denses_layer)
+
+#MODEL DEFINITION + OPTIMIZER + COMPILE
+#------------------------------------------------------------------------------
+
+model     = Model(inputs=[input_lags,input_days], outputs=output_layer)
+optimizer = Adam(learning_rate=le_rate)
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+#model.summary()
+
+#TRAIN MODEL
+#------------------------------------------------------------------------------
+
+set_seeds()
+file_model_name = f'version01.keras'
+path_keras = (results_path / file_model_name).as_posix()
+
+checkpointer = ModelCheckpoint(filepath=path_keras, verbose=0, monitor='val_accuracy',mode='max',save_best_only=True)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=15, verbose=1, restore_best_weights=True)
+
+log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard = TensorBoard(log_dir=log_dir)
+
+history = model.fit(X_train, y_train, 
+                    epochs=100, 
+                    verbose=0,
+                    batch_size=batch_s,
+                    validation_data=(X_valid, y_valid),
+                    callbacks=[checkpointer, early_stopping, tensorboard])
+
+best_epoch_early_stopping = early_stopping.stopped_epoch
+
+print("Epoch en la que se restauraron los pesos del modelo según EarlyStopping:", best_epoch_early_stopping)
+
+
+accuracy_history = pd.DataFrame(history.history)
+accuracy_history.index += 1
+accuracy_history.to_excel('accuracy_history.xlsx', index=False)
+
+#print(accuracy_history.columns)
+
+best_accur = accuracy_history['val_accuracy'].max()
+best_epoch = accuracy_history['val_accuracy'].idxmax()
+best_train_accur = accuracy_history['accuracy'].max()
+best_train_epoch = accuracy_history['accuracy'].idxmax()
+print(best_epoch)
+print(best_train_epoch)
+
+train_loss = history.history['loss'][-1]
+train_accu = history.history['accuracy'][-1]
+valid_loss = history.history['val_loss'][-1]
+valid_accu = history.history['val_accuracy'][-1]
+
+df_results = [{
+    'Lags             ': lags,
+    'Cutoff Date      ': initn_data_valid,
+    'Dropout          ': dropout,
+    'Neurons          ': n_neurons_1,
+    'Batch Size       ': batch_s,
+    'Learning Rate    ': le_rate,
+    'Optimizer       ': optimizers,
+    'Train Loss       ': train_loss,
+    'Val Loss         ': valid_loss,
+    'Train Accu       ': train_accu,
+    'Val Accu         ': valid_accu,
+    'Best val_accuracy': best_accur,
+    'Best epoch       ': best_epoch
+}]
+
+
+plot_accu(history)
+
+print(f"Ending Processing ending for lags = {lags} and initn_data_valid = {initn_data_valid}")
+print('\n')
+
+df_tra_val_results = pd.DataFrame(df_results)
+excel_file_path = os.path.join(path_base, folder_tra_val_results, f"df_tra_val_all.xlsx")
+df_tra_val_results.to_excel(excel_file_path, index=False)
+print("All Training results saved in: 'tra_val_results/df_tra_val_results.xlsx'")
+
+elapsed_time = time.time() - start_time
+hours, minutes = divmod(elapsed_time, 3600)
+minutes = minutes / 60  
+
+os.system("afplay /System/Library/Sounds/Ping.aiff")
+print(f"Total time taken for the process: {int(hours)} hours, {int(minutes)} minutes")
+

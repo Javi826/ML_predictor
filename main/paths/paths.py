@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 
 ## Directorio para almacenar archivos CSV
-path_base = "/Users/javi/Desktop/ML/YvesSP500"
+path_base = "/Users/javi/Desktop/ML/ML_predictor"
 
 file_df_data           = "sp500_data.csv"
 folder_csv             = "inputs/historicyh"
@@ -38,7 +38,7 @@ path_tests_results     = os.path.join(path_base, folder_tests_results, file_test
 folder_tf_serving = "tf_serving"
 tf_serving_path = os.path.join(path_base, folder_tf_serving)
 
-results_path = Path('/Users/javi/Desktop/ML/YvesSP500/keras')
+results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
 
 
 

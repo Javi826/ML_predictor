@@ -1,0 +1,12 @@
+[workspace]
+restore_data_on_startup = True
+save_data_on_exit = True
+save_history = True
+save_non_project_files = False
+project_type = 'empty-project-type'
+recent_files = ['main/ML_predictor_tr_va.py', 'main/sp500_IA.py', 'main/ML_predictor_tests.py', 'draft.py', 'main/modules/mod_preprocessing.py', 'main/modules/mod_pipeline.py']
+
+[main]
+version = 0.2.0
+recent_files = []
+
