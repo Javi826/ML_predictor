@@ -35,7 +35,7 @@ def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_f
         dweek_columns_selected = 'day_week'
         
         
-        #X_TRAIN & y_train | NORMALIZATION + RESHAPE
+        #X_TRAIN_techi + dweek
         #------------------------------------------------------------------------------
         
         if data_type == 'X_train_techi':
@@ -47,8 +47,13 @@ def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_f
             X_train_techi = X_reshaped
             
             return X_train_techi
+        
+        elif data_type == 'X_train_dweek':       
+            X_train_dweek = train_data['day_week']
             
-        #X_VALID| NORMALIZATION + RESHAPE
+            return X_train_dweek
+            
+        #X_VALID
         #------------------------------------------------------------------------------
         
         elif data_type == 'X_valid_techi':
@@ -61,8 +66,13 @@ def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_f
 
             return X_valid_techi
         
+        elif data_type == 'X_valid_dweek':           
+            X_valid_dweek = valid_data['day_week']
+            
+            return X_valid_dweek
         
-        #X_TESTS | NORMALIZATION + RESHAPE
+        
+        #X_TESTS
         #------------------------------------------------------------------------------        
         elif data_type == 'X_tests_techi':
             X_data        = tests_data[lag_columns_selected]
@@ -73,22 +83,14 @@ def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_f
             X_tests_techi = X_reshaped
             
             return X_tests_techi
-    
         
-        elif data_type == 'X_train_dweek':
-       
-            X_train_dweek = pd.DataFrame(train_data[dweek_columns_selected])
+        elif data_type == 'X_tests_dweek':           
+            X_tests_dweek = tests_data['day_week']
             
-            return X_train_dweek
-            
-            
-        elif data_type == 'X_valid_dweek':
-            
-            X_valid_dweek = pd.DataFrame(valid_data[dweek_columns_selected])
-            
-            return X_valid_dweek
+            return X_tests_dweek
+                        
 
-        #y_train, y_valid & y_tests
+        #y_train,valid,tests
         #------------------------------------------------------------------------------             
         elif data_type == 'y_train':
             y_train = train_data['direction']

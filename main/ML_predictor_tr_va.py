@@ -22,6 +22,8 @@ from modules.mod_dtset_clean import mod_dtset_clean
 from modules.mod_preprocessing import mod_preprocessing
 from modules.mod_pipeline import mod_pipeline
 
+import matplotlib.pyplot as plt
+
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 from keras.models import Model
@@ -51,11 +53,11 @@ df_clean = mod_dtset_clean(df_data,start_date,endin_date)
 #------------------------------------------------------------------------------
 prepro_start_date = '2000-01-01'
 prepro_endin_date = '2019-12-31'
-lags = 5  
+lags = 20 
 
 df_preprocessing = mod_preprocessing(df_clean,prepro_start_date,prepro_endin_date,lags)
 
-#SPLIT DATA - CALL PIPELINE
+# X_train - y_train | X_valid - y_valid SPLIT DATA - CALL PIPELINE
 #------------------------------------------------------------------------------
 n_features = 1
 endin_data_train  = initn_data_valid  = ['2018-01-01']
@@ -65,22 +67,15 @@ print(f"Starts Processing for lags = {lags} and initn_data_valid = {initn_data_v
 print('\n')
 
 X_train_techi = mod_pipeline(df_preprocessing, endin_data_train, endin_data_valid,lags, n_features, 'X_train_techi')
-X_valid_techi = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_techi')
-#print(X_train_techi)
-
 X_train_dweek = mod_pipeline(df_preprocessing, endin_data_train, endin_data_valid,lags, n_features, 'X_train_dweek')
+X_valid_techi = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_techi')
 X_valid_dweek = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_dweek')
-#print(X_train_dweek)
 
 X_train = [X_train_techi, X_train_dweek]
 X_valid = [X_valid_techi, X_valid_dweek]
 
 y_valid = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'y_valid')
 y_train = mod_pipeline(df_preprocessing, initn_data_valid, endin_data_valid,lags, n_features, 'y_train')
-
-X_train = [X_train_techi, X_train_dweek]
-X_valid = [X_valid_techi, X_valid_dweek]
-
 
 #INPUTS LAYERS
 #------------------------------------------------------------------------------
@@ -94,12 +89,13 @@ n_neurons_1 = 20
 n_neurons_2 = 10
 batch_s     = 32
 le_rate     = 0.001
+patiences   = 20
 optimizers  = 'adam'
 #LSTM LAYERS
 #------------------------------------------------------------------------------
-#LSTM 1
+#lstm 1
 lstm_layer1 = LSTM(units=n_neurons_1, dropout=dropout, name='LSTM1', return_sequences=True)(input_lags)
-#LSTM 2
+#lstm 2
 lstm_layer2 = LSTM(units=n_neurons_2, dropout=dropout, name='LSTM2')(lstm_layer1)
 
 #EMBEDDINGS LAYER
@@ -122,7 +118,10 @@ output_layer = Dense(1,  activation='sigmoid', name='output')(denses_layer)
 
 model     = Model(inputs=[input_lags,input_days], outputs=output_layer)
 optimizer = Adam(learning_rate=le_rate)
-model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy', tf.keras.metrics.AUC()])
+
 #model.summary()
 
 #TRAIN MODEL
@@ -133,58 +132,62 @@ file_model_name = f'version01.keras'
 path_keras = (results_path / file_model_name).as_posix()
 
 checkpointer = ModelCheckpoint(filepath=path_keras, verbose=0, monitor='val_accuracy',mode='max',save_best_only=True)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=15, verbose=1, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=patiences, verbose=1, restore_best_weights=True)
 
 log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard = TensorBoard(log_dir=log_dir)
 
 history = model.fit(X_train, y_train, 
-                    epochs=100, 
-                    verbose=0,
+                    epochs=20, 
+                    verbose=1,
                     batch_size=batch_s,
                     validation_data=(X_valid, y_valid),
                     callbacks=[checkpointer, early_stopping, tensorboard])
 
-best_epoch_early_stopping = early_stopping.stopped_epoch
-
-print("Epoch en la que se restauraron los pesos del modelo según EarlyStopping:", best_epoch_early_stopping)
-
+early_stopping_epoch = early_stopping.stopped_epoch
 
 accuracy_history = pd.DataFrame(history.history)
 accuracy_history.index += 1
 accuracy_history.to_excel('accuracy_history.xlsx', index=False)
 
-#print(accuracy_history.columns)
-
-best_accur = accuracy_history['val_accuracy'].max()
-best_epoch = accuracy_history['val_accuracy'].idxmax()
+best_valid_accur = accuracy_history['val_accuracy'].max()
+best_valid_epoch = accuracy_history['val_accuracy'].idxmax()
 best_train_accur = accuracy_history['accuracy'].max()
 best_train_epoch = accuracy_history['accuracy'].idxmax()
-print(best_epoch)
-print(best_train_epoch)
+
 
 train_loss = history.history['loss'][-1]
 train_accu = history.history['accuracy'][-1]
 valid_loss = history.history['val_loss'][-1]
 valid_accu = history.history['val_accuracy'][-1]
 
+print("Best validation accuracy :", best_valid_accur)
+print("Last val_accuracy        :", accuracy_history['val_accuracy'].iloc[-1])
+
+
+
+
 df_results = [{
-    'Lags             ': lags,
-    'Cutoff Date      ': initn_data_valid,
-    'Dropout          ': dropout,
-    'Neurons          ': n_neurons_1,
-    'Batch Size       ': batch_s,
-    'Learning Rate    ': le_rate,
-    'Optimizer       ': optimizers,
-    'Train Loss       ': train_loss,
-    'Val Loss         ': valid_loss,
-    'Train Accu       ': train_accu,
-    'Val Accu         ': valid_accu,
-    'Best val_accuracy': best_accur,
-    'Best epoch       ': best_epoch
+    'Lags               ': lags,
+    'Cutoff Date        ': initn_data_valid,
+    'Dropout            ': dropout,
+    'Neurons            ': n_neurons_1,
+    'Batch Size         ': batch_s,
+    'Learning Rate      ': le_rate,
+    'Optimizer          ': optimizers,
+    'Patience           ': patiences,
+    'Early_stopping     ': early_stopping_epoch,
+    'Train Loss         ': train_loss,
+    'Val Loss           ': valid_loss,
+    'Train Accu         ': train_accu,
+    'Val Accu           ': valid_accu,
+    'Best train_accuracy': best_valid_accur,
+    'Best valid_accuracy': best_valid_accur,
+    'Best train_epcoh   ': best_train_epoch,
+    'Best valid_epoch   ': best_valid_epoch
 }]
 
-
+plot_loss(history)
 plot_accu(history)
 
 print(f"Ending Processing ending for lags = {lags} and initn_data_valid = {initn_data_valid}")

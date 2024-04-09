@@ -1,4 +1,5 @@
-#FUNTCIONS
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """
 Created on Mon Nov  8 22:54:48 2023
@@ -91,23 +92,38 @@ def class_weight(df_preprocessing):
 
 def plot_loss(history):
     plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(history.history['loss'], label='Training Loss')
-    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.subplot(1, 2, 2)
+    epochs = range(1, len(history.history['loss']) + 1)
+    plt.plot(epochs, history.history['loss'], label='Training Loss')
+    plt.plot(epochs, history.history['val_loss'], label='Validation Loss')
     plt.title('Training and Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
     plt.show()
+    
 
 def plot_accu(history):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 2)
-    plt.plot(history.history['accuracy'], label='Training Accuracy')
-    plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+    epochs = range(1, len(history.history['accuracy']) + 1)
+    plt.plot(epochs, history.history['accuracy'], label='Training Accuracy')
+    plt.plot(epochs, history.history['val_accuracy'], label='Validation Accuracy')
     plt.title('Training and Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()
+    
+def plot_aucr(history):
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 2)
+    epochs = range(1, len(history.history['auc']) + 1)
+    plt.plot(epochs, history.history['auc'], label='Training AUC')
+    plt.plot(epochs, history.history['val_auc'], label='Validation AUC')
+    plt.title('Training and Validation AUC')
+    plt.xlabel('Epoch')
+    plt.ylabel('AUC')
     plt.legend()
     plt.show()
     
