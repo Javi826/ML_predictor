@@ -77,7 +77,7 @@ def filter_data_by_date_range(df, filter_start_date, filter_endin_date):
         
     return df[(df['date'] >= filter_start_date) & (df['date'] <= filter_endin_date)]
 
-def set_seeds(seed=100):
+def set_seeds(seed=42):
     random.seed(seed)
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -118,14 +118,44 @@ def plot_accu(history):
 def plot_aucr(history):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 2)
-    epochs = range(1, len(history.history['auc']) + 1)
-    plt.plot(epochs, history.history['auc'], label='Training AUC')
-    plt.plot(epochs, history.history['val_auc'], label='Validation AUC')
+    epochs = range(1, len(history.history['AUC']) + 1)
+    plt.plot(epochs, history.history['AUC'], label='Training AUC')
+    plt.plot(epochs, history.history['val_AUC'], label='Validation AUC')
     plt.title('Training and Validation AUC')
     plt.xlabel('Epoch')
     plt.ylabel('AUC')
     plt.legend()
     plt.show()
+    
+def evaluate_history(history):
+    # Crear un DataFrame con el historial de métricas
+    accuracy_history = pd.DataFrame(history.history)
+    accuracy_history.index += 1
+    
+    # Guardar el historial en un archivo Excel
+    accuracy_history.to_excel('accuracy_history.xlsx', index=False)
+
+    # Calcular las métricas
+    best_valid_accur = accuracy_history['val_accuracy'].max()
+    best_valid_epoch = accuracy_history['val_accuracy'].idxmax()
+    best_train_accur = accuracy_history['accuracy'].max()
+    best_train_epoch = accuracy_history['accuracy'].idxmax()
+
+    train_loss = history.history['loss'][-1]
+    train_accu = history.history['accuracy'][-1]
+    valid_loss = history.history['val_loss'][-1]
+    valid_accu = history.history['val_accuracy'][-1]
+
+    return {
+        'best_valid_accur': best_valid_accur,
+        'best_valid_epoch': best_valid_epoch,
+        'best_train_accur': best_train_accur,
+        'best_train_epoch': best_train_epoch,
+        'train_loss': train_loss,
+        'train_accu': train_accu,
+        'valid_loss': valid_loss,
+        'valid_accu': valid_accu
+    }
     
 def df_plots(x, y, x_label, y_label,plot_style):
     

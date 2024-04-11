@@ -17,7 +17,7 @@ import yfinance as yf
 from modules.mod_init import *
 from paths.paths import file_df_data,folder_csv,path_file_csv,results_path,path_tra_val_results,file_tra_val_results, path_base,folder_tra_val_results
 from columns.columns import columns_csv_yahoo,columns_clean_order
-from functions.def_functions import set_seeds, class_weight,plots_histograms,plot_loss, plot_accu
+from functions.def_functions import set_seeds, class_weight,plots_histograms,plot_loss, plot_accu,plot_aucr, evaluate_history
 from modules.mod_dtset_clean import mod_dtset_clean
 from modules.mod_preprocessing import mod_preprocessing
 from modules.mod_pipeline import mod_pipeline
@@ -53,7 +53,7 @@ df_clean = mod_dtset_clean(df_data,start_date,endin_date)
 #------------------------------------------------------------------------------
 prepro_start_date = '2000-01-01'
 prepro_endin_date = '2019-12-31'
-lags = 20 
+lags = 5 
 
 df_preprocessing = mod_preprocessing(df_clean,prepro_start_date,prepro_endin_date,lags)
 
@@ -84,7 +84,7 @@ input_days = Input(shape=(1,),name='input_days')
 
 #VARIABLES
 #------------------------------------------------------------------------------
-dropout     = 0.2
+dropout     = 0.1
 n_neurons_1 = 20
 n_neurons_2 = 10
 batch_s     = 32
@@ -120,7 +120,7 @@ model     = Model(inputs=[input_lags,input_days], outputs=output_layer)
 optimizer = Adam(learning_rate=le_rate)
 model.compile(optimizer='adam',
               loss='binary_crossentropy',
-              metrics=['accuracy', tf.keras.metrics.AUC()])
+              metrics=['accuracy', 'AUC'])
 
 #model.summary()
 
@@ -138,34 +138,17 @@ log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard = TensorBoard(log_dir=log_dir)
 
 history = model.fit(X_train, y_train, 
-                    epochs=20, 
-                    verbose=1,
+                    epochs=50, 
+                    verbose=0,
                     batch_size=batch_s,
                     validation_data=(X_valid, y_valid),
                     callbacks=[checkpointer, early_stopping, tensorboard])
 
-early_stopping_epoch = early_stopping.stopped_epoch
-
-accuracy_history = pd.DataFrame(history.history)
-accuracy_history.index += 1
-accuracy_history.to_excel('accuracy_history.xlsx', index=False)
-
-best_valid_accur = accuracy_history['val_accuracy'].max()
-best_valid_epoch = accuracy_history['val_accuracy'].idxmax()
-best_train_accur = accuracy_history['accuracy'].max()
-best_train_epoch = accuracy_history['accuracy'].idxmax()
-
-
-train_loss = history.history['loss'][-1]
-train_accu = history.history['accuracy'][-1]
-valid_loss = history.history['val_loss'][-1]
-valid_accu = history.history['val_accuracy'][-1]
-
-print("Best validation accuracy :", best_valid_accur)
-print("Last val_accuracy        :", accuracy_history['val_accuracy'].iloc[-1])
-
-
-
+#EVALUATE MODEL + SAVE ON DATAFRAME + PRINTS
+#------------------------------------------------------------------------------
+evaluation_results = evaluate_history(history)
+print("Best validation accuracy :", evaluation_results['best_valid_accur'])
+print("Last val_accuracy        :", evaluation_results['valid_accu'])
 
 df_results = [{
     'Lags               ': lags,
@@ -176,25 +159,31 @@ df_results = [{
     'Learning Rate      ': le_rate,
     'Optimizer          ': optimizers,
     'Patience           ': patiences,
-    'Early_stopping     ': early_stopping_epoch,
-    'Train Loss         ': train_loss,
-    'Val Loss           ': valid_loss,
-    'Train Accu         ': train_accu,
-    'Val Accu           ': valid_accu,
-    'Best train_accuracy': best_valid_accur,
-    'Best valid_accuracy': best_valid_accur,
-    'Best train_epcoh   ': best_train_epoch,
-    'Best valid_epoch   ': best_valid_epoch
+    'Early_stopping     ': evaluation_results['best_train_epoch'],
+    'Train Loss         ': evaluation_results['train_loss'],
+    'Val Loss           ': evaluation_results['valid_loss'],
+    'Train Accu         ': evaluation_results['train_accu'],
+    'Val Accu           ': evaluation_results['valid_accu'],
+    'Best train_accuracy': evaluation_results['best_valid_accur'],
+    'Best valid_accuracy': evaluation_results['best_valid_accur'],
+    'Best train_epcoh   ': evaluation_results['best_train_epoch'],
+    'Best valid_epoch   ': evaluation_results['best_valid_epoch']
 }]
 
+#PLOTS TRAIN
+#------------------------------------------------------------------------------
 plot_loss(history)
 plot_accu(history)
+plot_aucr(history)
+
+#FILES SAVING
+#------------------------------------------------------------------------------
 
 print(f"Ending Processing ending for lags = {lags} and initn_data_valid = {initn_data_valid}")
 print('\n')
 
 df_tra_val_results = pd.DataFrame(df_results)
-excel_file_path = os.path.join(path_base, folder_tra_val_results, f"df_tra_val_all.xlsx")
+excel_file_path    = os.path.join(path_base, folder_tra_val_results, f"df_tra_val_all.xlsx")
 df_tra_val_results.to_excel(excel_file_path, index=False)
 print("All Training results saved in: 'tra_val_results/df_tra_val_results.xlsx'")
 
