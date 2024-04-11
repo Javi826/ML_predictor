@@ -12,10 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import tensorflow as tf
-from keras.layers import SimpleRNN, LSTM, Dense,Dropout
-from keras.models import Sequential
 
-lags = 5 
 
 def day_week(df_clean):
        
@@ -157,6 +154,29 @@ def evaluate_history(history):
         'valid_accu': valid_accu
     }
     
+def create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, evaluation_results):
+    df_results = [{
+        'Lags               ': lags,
+        'Cutoff Date        ': initn_data_valid,
+        'Dropout            ': dropout,
+        'Neurons            ': n_neurons_1,
+        'Batch Size         ': batch_s,
+        'Learning Rate      ': le_rate,
+        'Optimizer          ': optimizers,
+        'Patience           ': patiences,
+        'Early_stopping     ': evaluation_results['best_train_epoch'],
+        'Train Loss         ': evaluation_results['train_loss'],
+        'Val Loss           ': evaluation_results['valid_loss'],
+        'Train Accu         ': evaluation_results['train_accu'],
+        'Val Accu           ': evaluation_results['valid_accu'],
+        'Best train_accuracy': evaluation_results['best_valid_accur'],
+        'Best valid_accuracy': evaluation_results['best_valid_accur'],
+        'Best train_epcoh   ': evaluation_results['best_train_epoch'],
+        'Best valid_epoch   ': evaluation_results['best_valid_epoch']
+    }]
+    return df_results
+
+
 def df_plots(x, y, x_label, y_label,plot_style):
     
     plt.figure(figsize=(10, 6))

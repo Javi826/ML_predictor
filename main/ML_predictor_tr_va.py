@@ -17,7 +17,7 @@ import yfinance as yf
 from modules.mod_init import *
 from paths.paths import file_df_data,folder_csv,path_file_csv,results_path,path_tra_val_results,file_tra_val_results, path_base,folder_tra_val_results
 from columns.columns import columns_csv_yahoo,columns_clean_order
-from functions.def_functions import set_seeds, class_weight,plots_histograms,plot_loss, plot_accu,plot_aucr, evaluate_history
+from functions.def_functions import set_seeds, class_weight,plots_histograms,plot_loss, plot_accu,plot_aucr, evaluate_history,create_results_df
 from modules.mod_dtset_clean import mod_dtset_clean
 from modules.mod_preprocessing import mod_preprocessing
 from modules.mod_pipeline import mod_pipeline
@@ -147,28 +147,10 @@ history = model.fit(X_train, y_train,
 #EVALUATE MODEL + SAVE ON DATAFRAME + PRINTS
 #------------------------------------------------------------------------------
 evaluation_results = evaluate_history(history)
-print("Best validation accuracy :", evaluation_results['best_valid_accur'])
-print("Last val_accuracy        :", evaluation_results['valid_accu'])
+print("Best val_accuracy:", evaluation_results['best_valid_accur'])
+print("Last val_accuracy:", evaluation_results['valid_accu'])
 
-df_results = [{
-    'Lags               ': lags,
-    'Cutoff Date        ': initn_data_valid,
-    'Dropout            ': dropout,
-    'Neurons            ': n_neurons_1,
-    'Batch Size         ': batch_s,
-    'Learning Rate      ': le_rate,
-    'Optimizer          ': optimizers,
-    'Patience           ': patiences,
-    'Early_stopping     ': evaluation_results['best_train_epoch'],
-    'Train Loss         ': evaluation_results['train_loss'],
-    'Val Loss           ': evaluation_results['valid_loss'],
-    'Train Accu         ': evaluation_results['train_accu'],
-    'Val Accu           ': evaluation_results['valid_accu'],
-    'Best train_accuracy': evaluation_results['best_valid_accur'],
-    'Best valid_accuracy': evaluation_results['best_valid_accur'],
-    'Best train_epcoh   ': evaluation_results['best_train_epoch'],
-    'Best valid_epoch   ': evaluation_results['best_valid_epoch']
-}]
+df_results = create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, evaluation_results)
 
 #PLOTS TRAIN
 #------------------------------------------------------------------------------
