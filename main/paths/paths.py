@@ -15,9 +15,9 @@ file_df_data           = "sp500_data.csv"
 folder_csv             = "inputs/historicyh"
 path_file_csv          = os.path.join(path_base, folder_csv, file_df_data)
 
-file_df_clean          = "df_clean.csv"
-folder_df_clean        = "inputs/dtset_clean"
-path_df_clean          = os.path.join(path_base, folder_df_clean, file_df_clean)
+file_df_build          = "df_build.csv"
+folder_df_build        = "inputs/data_build"
+path_df_build          = os.path.join(path_base, folder_df_build, file_df_build)
 
 file_summary_stats     = 'df_summary_stats'
 folder_summary_stats   = "outputs/summary_stats"
@@ -39,6 +39,9 @@ folder_tf_serving = "tf_serving"
 tf_serving_path = os.path.join(path_base, folder_tf_serving)
 
 results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
+
+file_model_name = f'version01.keras'
+path_keras = (results_path / file_model_name).as_posix()
 
 
 

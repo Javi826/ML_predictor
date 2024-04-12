@@ -5,8 +5,6 @@
 Created on Mon Nov  8 22:54:48 2023
 @author: javier
 """
-
-from columns.columns import *
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,61 +12,52 @@ import random
 import tensorflow as tf
 
 
-def day_week(df_clean):
+def day_week(df_build):
        
-    # column with dates
-    date_column = 'date' 
-    # ensuring date_column with date format
-    df_clean[date_column] = pd.to_datetime(df_clean[date_column])
-    # add column day_week + from label to number
-    df_clean['day_week'] = df_clean[date_column].dt.dayofweek  
+    df_build['date']     = pd.to_datetime(df_build['date'])
+    df_build['day_week'] = df_build['date'].dt.dayofweek   
     
-    return df_clean
+    return df_build
 
-
-def add_index_column(df_clean):
+def date_anio(df_build):
     
-    # add index
-    df_clean.insert(0, 'index_id', range(1, len(df_clean) + 1))
-    df_clean['index_id'] = df_clean['index_id'].apply(lambda x: f'{x:05d}')
+    df_build['date']      = pd.to_datetime(df_build['date'])    
+    df_build['date_anio'] = df_build['date'].dt.year.astype(str).str[:4]
     
+    return df_build
+
+def add_index_column(df_build):
     
-    return df_clean
+    df_build.insert(0, 'index_id', range(1, len(df_build) + 1))
+    df_build['index_id'] = df_build['index_id'].apply(lambda x: f'{x:05d}')
+       
+    return df_build
 
-def date_anio(df_clean):
+def sort_columns(df_build):
+
+    desired_column_order = columns_build_order= ['index_id','date_anio','date', 'day_week', 'close', 'open', 'high', 'low', 'adj_close','volume']
+    df_build = df_build[desired_column_order]
     
-    df_clean['date'] = pd.to_datetime(df_clean['date'])    
-    # Extract year
-    df_clean['date_anio'] = df_clean['date'].dt.year.astype(str).str[:4]
+    return df_build
+
+def rounding_data(df_build):
+
+    columns_to_round           = ['open', 'high', 'low', 'close', 'adj_close']
+    df_build[columns_to_round] = df_build[columns_to_round].astype(float)
+    df_build['day_week']       = df_build['day_week'].astype(int)
     
-    return df_clean
-
-
-def sort_columns(df_clean):
-
-    desired_column_order = columns_clean_order
-    # Ensuure columns in dataframe
-    missing_columns = set(desired_column_order) - set(df_clean.columns)
-    if missing_columns:
-        raise ValueError(f"following columns no in DataFrame: {', '.join(missing_columns)}")
-
-    # Sort columns
-    df_clean = df_clean[desired_column_order]
-    
-    return df_clean
-
-def rounding_data(df_clean):
-
-    columns_to_round = ['open', 'high', 'low', 'close', 'adj_close']
-    # format float
-    df_clean[columns_to_round] = df_clean[columns_to_round].astype(float)
-    df_clean['day_week'] = df_clean['day_week'].astype(int)
-    #format rounding 
     for column in columns_to_round:
-      if column in df_clean.columns:
-          df_clean[column] = df_clean[column].round(4)
+      if column in df_build.columns:
+          df_build[column] = df_build[column].round(4)
             
-    return df_clean
+    return df_build
+
+def diff_series(series, diff):
+    
+    diff = diff
+    diff_series = series.diff(periods=diff)
+    
+    return diff_series
 
 def filter_data_by_date_range(df, filter_start_date, filter_endin_date):
         
@@ -85,6 +74,81 @@ def class_weight(df_preprocessing):
     w0 = (1/c0) * (len(df_preprocessing)) / 2
     w1 = (1/c1) * (len(df_preprocessing)) / 2
     return {0: w0, 1:w1}
+    
+def evaluate_history(history):
+
+    metrics_history = pd.DataFrame(history.history)
+    metrics_history.index += 1
+
+    # Bests TRAIN Metrics
+    best_train_loss       = metrics_history['loss'].min()
+    best_train_accu       = metrics_history['accuracy'].max()
+    best_train_AUCr       = metrics_history['AUC'].max()
+    best_train_epoch_loss = metrics_history['loss'].idxmin()
+    best_train_epoch_accu = metrics_history['accuracy'].idxmax()
+    best_train_epoch_AUCr = metrics_history['AUC'].idxmax()
+    
+    # Bests VALID Metrics    
+    best_valid_loss       = metrics_history['val_loss'].min()
+    best_valid_accu       = metrics_history['val_accuracy'].max()
+    best_valid_AUCr       = metrics_history['val_AUC'].max()
+    best_valid_epoch_loss = metrics_history['val_loss'].idxmin()
+    best_valid_epoch_accu = metrics_history['val_accuracy'].idxmax()
+    best_valid_epoch_AUCr = metrics_history['val_AUC'].idxmax()
+
+    # LAST Metrics
+    last_train_loss = history.history['loss'][-1]
+    last_train_accu = history.history['accuracy'][-1]
+    last_train_AUCr = history.history['AUC'][-1]
+    last_valid_loss = history.history['val_loss'][-1]
+    last_valid_accu = history.history['val_accuracy'][-1]
+    last_valid_AUCr = history.history['val_AUC'][-1]
+
+    return {
+        'best_train_loss': best_train_loss,
+        'best_train_accu': best_train_accu,
+        'best_train_AUC': best_train_AUCr,
+        'best_train_epoch_loss': best_train_epoch_loss,
+        'best_train_epoch_accu': best_train_epoch_accu,
+        'best_train_epoch_AUC': best_train_epoch_AUCr,
+        'best_valid_loss': best_valid_loss,
+        'best_valid_accu': best_valid_accu,
+        'best_valid_AUC': best_valid_AUCr,
+        'best_valid_epoch_loss': best_valid_epoch_loss,
+        'best_valid_epoch_accu': best_valid_epoch_accu,
+        'best_valid_epoch_AUC': best_valid_epoch_AUCr,
+        'last_train_loss': last_train_loss,
+        'last_train_accu': last_train_accu,
+        'last_train_AUC': last_train_AUCr,
+        'last_valid_loss': last_valid_loss,
+        'last_valid_accu': last_valid_accu,
+        'last_valid_AUC': last_valid_AUCr
+    }
+
+
+    
+def create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
+    df_results = [{
+        'Lags               ': lags,
+        'Cutoff Date        ': initn_data_valid,
+        'Dropout            ': dropout,
+        'Neurons            ': n_neurons_1,
+        'Batch Size         ': batch_s,
+        'Learning Rate      ': le_rate,
+        'Optimizer          ': optimizers,
+        'Patience           ': patiences,
+        'Last train_Loss    ': ev_results['last_train_loss'],
+        'Last talid_Loss    ': ev_results['last_valid_loss'],
+        'Last train_accuracy': ev_results['last_train_accu'],
+        'Last talid_accuracy': ev_results['last_valid_accu'],
+        'Best train_accuracy': ev_results['best_train_accu'],
+        'Best valid_accuracy': ev_results['best_valid_accu'],
+        'Best train_epcoh   ': ev_results['best_train_epoch_accu'],
+        'Best valid_epoch   ': ev_results['best_valid_epoch_accu'],
+        'Best train_AUC     ': ev_results['best_train_AUC'],
+        'Best valid_AUC     ': ev_results['best_valid_AUC']
+    }]
+    return df_results
 
 
 def plot_loss(history):
@@ -104,8 +168,8 @@ def plot_accu(history):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 2)
     epochs = range(1, len(history.history['accuracy']) + 1)
-    plt.plot(epochs, history.history['accuracy'], label='Training Accuracy')
-    plt.plot(epochs, history.history['val_accuracy'], label='Validation Accuracy')
+    plt.plot(epochs, (history.history['accuracy']), label='Training Accuracy')
+    plt.plot(epochs, (history.history['val_accuracy']), label='Validation Accuracy ')
     plt.title('Training and Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
@@ -123,59 +187,6 @@ def plot_aucr(history):
     plt.ylabel('AUC')
     plt.legend()
     plt.show()
-    
-def evaluate_history(history):
-    # Crear un DataFrame con el historial de métricas
-    accuracy_history = pd.DataFrame(history.history)
-    accuracy_history.index += 1
-    
-    # Guardar el historial en un archivo Excel
-    accuracy_history.to_excel('accuracy_history.xlsx', index=False)
-
-    # Calcular las métricas
-    best_valid_accur = accuracy_history['val_accuracy'].max()
-    best_valid_epoch = accuracy_history['val_accuracy'].idxmax()
-    best_train_accur = accuracy_history['accuracy'].max()
-    best_train_epoch = accuracy_history['accuracy'].idxmax()
-
-    train_loss = history.history['loss'][-1]
-    train_accu = history.history['accuracy'][-1]
-    valid_loss = history.history['val_loss'][-1]
-    valid_accu = history.history['val_accuracy'][-1]
-
-    return {
-        'best_valid_accur': best_valid_accur,
-        'best_valid_epoch': best_valid_epoch,
-        'best_train_accur': best_train_accur,
-        'best_train_epoch': best_train_epoch,
-        'train_loss': train_loss,
-        'train_accu': train_accu,
-        'valid_loss': valid_loss,
-        'valid_accu': valid_accu
-    }
-    
-def create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, evaluation_results):
-    df_results = [{
-        'Lags               ': lags,
-        'Cutoff Date        ': initn_data_valid,
-        'Dropout            ': dropout,
-        'Neurons            ': n_neurons_1,
-        'Batch Size         ': batch_s,
-        'Learning Rate      ': le_rate,
-        'Optimizer          ': optimizers,
-        'Patience           ': patiences,
-        'Early_stopping     ': evaluation_results['best_train_epoch'],
-        'Train Loss         ': evaluation_results['train_loss'],
-        'Val Loss           ': evaluation_results['valid_loss'],
-        'Train Accu         ': evaluation_results['train_accu'],
-        'Val Accu           ': evaluation_results['valid_accu'],
-        'Best train_accuracy': evaluation_results['best_valid_accur'],
-        'Best valid_accuracy': evaluation_results['best_valid_accur'],
-        'Best train_epcoh   ': evaluation_results['best_train_epoch'],
-        'Best valid_epoch   ': evaluation_results['best_valid_epoch']
-    }]
-    return df_results
-
 
 def df_plots(x, y, x_label, y_label,plot_style):
     
