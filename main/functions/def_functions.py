@@ -26,18 +26,23 @@ def date_anio(df_build):
     
     return df_build
 
+def one_hot_months(df_build):
+    
+    df_build['date'] = pd.to_datetime(df_build['date'])  
+    
+    months_columns = []
+    for month in range(1, 13):
+        month_name = f'month_{month:02d}'
+        df_build[month_name] = (df_build['date'].dt.month == month).astype(int)
+        months_columns.append(month_name)
+    
+    return df_build
+
 def add_index_column(df_build):
     
     df_build.insert(0, 'index_id', range(1, len(df_build) + 1))
     df_build['index_id'] = df_build['index_id'].apply(lambda x: f'{x:05d}')
        
-    return df_build
-
-def sort_columns(df_build):
-
-    desired_column_order = columns_build_order= ['index_id','date_anio','date', 'day_week', 'close', 'open', 'high', 'low', 'adj_close','volume']
-    df_build = df_build[desired_column_order]
-    
     return df_build
 
 def rounding_data(df_build):
@@ -50,6 +55,14 @@ def rounding_data(df_build):
       if column in df_build.columns:
           df_build[column] = df_build[column].round(4)
             
+    return df_build
+
+def sort_columns(df_build):
+
+    month_columns = [col for col in df_build.columns if col.startswith('month_')]    
+    desired_column_order = ['index_id', 'date_anio', 'date', 'day_week', 'close', 'open', 'high', 'low', 'adj_close', 'volume'] + month_columns
+    df_build = df_build[desired_column_order]
+    
     return df_build
 
 def diff_series(series, diff):
@@ -67,13 +80,25 @@ def set_seeds(seed=42):
     random.seed(seed)
     np.random.seed(seed)
     tf.random.set_seed(seed)
-
-def class_weight(df_preprocessing):
     
+def class_weight(df_preprocessing):
     c0, c1 = np.bincount(df_preprocessing['direction'])
+    print(f"Clase 0: {c0} muestras, Clase 1: {c1} muestras")
+    
     w0 = (1/c0) * (len(df_preprocessing)) / 2
     w1 = (1/c1) * (len(df_preprocessing)) / 2
-    return {0: w0, 1:w1}
+    
+    print(f"Peso de clase 0: {w0}, Peso de clase 1: {w1}")
+    
+    return {0: w0, 1: w1}
+
+
+#def class_weight(df_preprocessing):
+ #   
+  #  c0, c1 = np.bincount(df_preprocessing['direction'])
+#    w0 = (1/c0) * (len(df_preprocessing)) / 2
+ #   w1 = (1/c1) * (len(df_preprocessing)) / 2
+  #  return {0: w0, 1:w1}
     
 def evaluate_history(history):
 
