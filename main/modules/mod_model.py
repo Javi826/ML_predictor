@@ -14,7 +14,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from functions.def_functions import set_seeds
 
 
-def build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, batch_s_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features):
+def build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features):
     
     #INPUT LAYERS
     input_lags   = Input(shape=(lags, n_features), name='input_Lags')
@@ -45,7 +45,7 @@ def build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, batch_s_ra, le_r
     return model
 
 
-def train_model(model, X_train, y_train, X_valid, y_valid, batch_s_ra, epochs_ra, patien_ra, path_keras):
+def train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras):
     
     set_seeds()
     
@@ -55,7 +55,7 @@ def train_model(model, X_train, y_train, X_valid, y_valid, batch_s_ra, epochs_ra
     history = model.fit(X_train, y_train, 
                         epochs=epochs_ra, 
                         verbose=0,
-                        batch_size=batch_s_ra,
+                        batch_size=batchs_ra,
                         validation_data=(X_valid, y_valid),
                         callbacks=[check_pointers, early_stopping])
     

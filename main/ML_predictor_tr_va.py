@@ -66,30 +66,30 @@ dropout_ra = 0.1
 n_neur1_ra = 50
 n_neur2_ra = int(n_neur1_ra / 2)
 n_neur3_ra = 10
-batch_s_ra = 32
 le_rate_ra = 0.001
 l2_regu_ra = 0.001
 patiens_ra = 100
 
 #BUILD MODEL
 #------------------------------------------------------------------------------
-model = build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, batch_s_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features)
+model = build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features)
 
 #TRAIN MODEL
 #------------------------------------------------------------------------------
+batchs_ra = 32
 patien_ra = 100
 epochs_ra = 100
-history   = train_model(model, X_train, y_train, X_valid, y_valid, batch_s_ra, epochs_ra, patien_ra, path_keras)
+history   = train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras)
 
 #EVALUATE MODEL + SAVE ON DATAFRAME + PRINTS
 #------------------------------------------------------------------------------
 ev_results = evaluate_history(history)
-df_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batch_s_ra, le_rate_ra, optimizers, patiens_ra, ev_results)
+df_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patiens_ra, ev_results)
 
-print("Best epoch    Valid accuracy :", round(ev_results['best_valid_epoch_accu'], 2))
-print("Best epoch    Valid AUC      :", round(ev_results['best_valid_epoch_AUC'], 2))
-print("Best accuracy Valid data     :", round(ev_results['best_valid_accu'], 2))
-print("Best AUC      Valid data     :", round(ev_results['best_valid_AUC'], 2))
+print("Best epoch    Valid accuracy:", round(ev_results['best_valid_epoch_accu'], 2))
+print("Best epoch    Valid AUC     :", round(ev_results['best_valid_epoch_AUC'], 2))
+print("Best accuracy Valid data    :", round(ev_results['best_valid_accu'], 2))
+print("Best AUC      Valid data    :", round(ev_results['best_valid_AUC'], 2))
 
 #PLOTS TRAIN
 #------------------------------------------------------------------------------
