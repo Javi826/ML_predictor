@@ -4,18 +4,14 @@
 Created on Mon Nov  8 22:54:48 2023
 @author: javier
 """
-#from functions.def_functions import *
-from paths.paths import path_base,folder_preprocessing
-import os
+
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import StandardScaler
-from functions.def_functions import filter_data_by_date_range, df_plots
-from paths.paths import path_base, folder_preprocessing
+
+
 
 def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_features, data_type):
     
-    X_train, y_train, X_valid, y_valid = None, None, None, None
     
     for cutoff_date in initn_date_range:
         #print(f"Pipeline for {data_type}: start with lags = {lags}, initn_date_range = {cutoff_date}, endin_date_range = {endin_date_range}")

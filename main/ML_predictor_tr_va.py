@@ -8,27 +8,20 @@ Created on Fri Mar  1 23:33:28 2024
 import os
 import time
 import pandas as pd
-#import numpy as np
 
 from modules.mod_init import *
 from paths.paths import path_file_csv,path_base,folder_tra_val_results, path_keras
-from functions.def_functions import set_seeds,plot_loss, plot_accu,plot_aucr, evaluate_history,create_results_df
+from functions.def_functions import plot_loss, plot_accu,plot_aucr, evaluate_history,create_results_df
 from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
 from modules.mod_pipeline import mod_pipeline
-
-
-from keras.models import Model
-from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.layers import LSTM, Dense, Input, Embedding, Reshape, concatenate, BatchNormalization
-from keras.regularizers import l1, l2, l1_l2
+from modules.mod_model import build_model,train_model
 
 start_time = time.time()
 
 #CALL DATACLEANING
 #------------------------------------------------------------------------------
-start_date = "1980-01-01"
+start_date = "2000-01-01"
 endin_date = "2023-12-31"
 df_data    = pd.read_csv(path_file_csv, header=None, skiprows=1, names=['date','open','high','low','close','adj_close','volume'])
 df_build   = mod_data_build(df_data,start_date,endin_date)
@@ -50,90 +43,53 @@ endin_data_valid  = '2018-12-31'
     
 print(f"Starts Processing for lags = {lags} and initn_data_valid = {initn_data_valid}\n")
 
-X_train_techi = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid,lags, n_features, 'X_train_techi')
-X_train_month = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid,lags, n_features, 'X_train_month')
-X_train_dweek = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid,lags, n_features, 'X_train_dweek')
+X_train_techi = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid, lags, n_features, 'X_train_techi')
+X_train_month = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid, lags, n_features, 'X_train_month')
+X_train_dweek = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid, lags, n_features, 'X_train_dweek')
 
-X_valid_techi = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_techi')
-X_valid_month = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_month')
-X_valid_dweek = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid,lags, n_features, 'X_valid_dweek')
+X_valid_techi = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'X_valid_techi')
+X_valid_month = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'X_valid_month')
+X_valid_dweek = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'X_valid_dweek')
 
 X_train = [X_train_techi, X_train_month, X_train_dweek]
 X_valid = [X_valid_techi, X_valid_month, X_valid_dweek]
 
-y_valid = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid,lags, n_features, 'y_valid')
-y_train = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid,lags, n_features, 'y_train')
-
-#INPUTS LAYERS
-#------------------------------------------------------------------------------
-input_lags   = Input(shape=(lags, n_features),name='input_Lags')
-input_months = Input(shape=(12,),name='input_Months')
-input_days   = Input(shape=(1,),name='input_Days')
+y_valid = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'y_valid')
+y_train = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'y_train')
 
 #VARIABLES
 #------------------------------------------------------------------------------
-dropout_range = 0.1
-n_neur1_range = 50
-n_neur2_range = int(n_neur1_range // 2)
-batch_s_range = 32
-le_rate_range = 0.001
-patiens_range = 100
-optimizers    = 'adam'
+n_features = 1
+optimizers = 'adam'
 
-#LSTM LAYERS
-#------------------------------------------------------------------------------
-lstm_layer1 = LSTM(units=n_neur1_range, dropout=dropout_range, name='LSTM1', return_sequences=True)(input_lags)
-lstm_layer2 = LSTM(units=n_neur2_range, dropout=dropout_range, name='LSTM2')(lstm_layer1)
+dropout_ra = 0.1
+n_neur1_ra = 50
+n_neur2_ra = int(n_neur1_ra / 2)
+n_neur3_ra = 10
+batch_s_ra = 32
+le_rate_ra = 0.001
+l2_regu_ra = 0.001
+patiens_ra = 100
 
-#EMBEDDINGS LAYER
+#BUILD MODEL
 #------------------------------------------------------------------------------
-dweek_embedding = Embedding(input_dim=5, output_dim=5)(input_days)
-dweek_embedding = Reshape(target_shape=(5,))(dweek_embedding)
-
-#CONCATENATE MODEL + BATCHNORMALIZATION
-#------------------------------------------------------------------------------
-merge_concatenat = concatenate([lstm_layer2, input_months, dweek_embedding])
-batch_normalized = BatchNormalization()(merge_concatenat)
-
-#DENSE LAYER
-#------------------------------------------------------------------------------
-denses_layer = Dense(10, activation='relu')(batch_normalized)
-output_layer = Dense(1,  activation='sigmoid', name='output')(denses_layer)
-
-#MODEL DEFINITION + OPTIMIZER + COMPILE
-#------------------------------------------------------------------------------
-model     = Model(inputs=[input_lags,input_months, input_days], outputs=output_layer)
-optimizer = Adam(learning_rate=le_rate_range)
-model.compile(optimizer=optimizers,loss='binary_crossentropy',metrics=['accuracy', 'AUC'])
-#model.summary()
+model = build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, batch_s_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features)
 
 #TRAIN MODEL
 #------------------------------------------------------------------------------
-set_seeds()
-check_pointers = ModelCheckpoint(filepath=path_keras, verbose=0, monitor='val_accuracy',mode='max',save_best_only=True)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=patiens_range, verbose=0, restore_best_weights=True)
-
-history = model.fit(X_train, y_train, 
-                    epochs=100, 
-                    verbose=0,
-                    batch_size=batch_s_range,
-                    validation_data=(X_valid, y_valid),
-                    #class_weight=class_weights,
-                    callbacks=[check_pointers, early_stopping])
+patien_ra = 100
+epochs_ra = 100
+history   = train_model(model, X_train, y_train, X_valid, y_valid, batch_s_ra, epochs_ra, patien_ra, path_keras)
 
 #EVALUATE MODEL + SAVE ON DATAFRAME + PRINTS
 #------------------------------------------------------------------------------
 ev_results = evaluate_history(history)
-df_results = create_results_df(lags, initn_data_valid, dropout_range, n_neur1_range, batch_s_range, le_rate_range, optimizers, patiens_range, ev_results)
+df_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batch_s_ra, le_rate_ra, optimizers, patiens_ra, ev_results)
 
-print("Best epoch    Train accuracy :", ev_results['best_train_epoch_accu'])
-print("Best epoch    Valid accuracy :", ev_results['best_valid_epoch_accu'])
-print("Best epoch    Train AUC      :", ev_results['best_train_epoch_AUC'])
-print("Best epoch    Valid AUC      :", ev_results['best_valid_epoch_AUC'])
-print("Best accuracy Train data     :", ev_results['best_train_accu'])
-print("Best AUC      Train data     :", ev_results['best_train_AUC'])
-print("Best accuracy Valid data     :", ev_results['best_valid_accu'])
-print("Best AUC      Valid data     :", ev_results['best_valid_AUC'])
+print("Best epoch    Valid accuracy :", round(ev_results['best_valid_epoch_accu'], 2))
+print("Best epoch    Valid AUC      :", round(ev_results['best_valid_epoch_AUC'], 2))
+print("Best accuracy Valid data     :", round(ev_results['best_valid_accu'], 2))
+print("Best AUC      Valid data     :", round(ev_results['best_valid_AUC'], 2))
 
 #PLOTS TRAIN
 #------------------------------------------------------------------------------

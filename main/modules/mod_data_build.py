@@ -9,7 +9,7 @@ from paths.paths import path_base,folder_df_build
 
 def mod_data_build(df_data,start_date,endin_date):
 
-    print(f'\nSTART MODUL mod_data_build')
+    print(f'\nSTARTS MODUL mod_data_build')
     
     #Restart dataframe jic
     restart_dataframes = True  
@@ -27,6 +27,6 @@ def mod_data_build(df_data,start_date,endin_date):
     excel_file_path = os.path.join(path_base, folder_df_build, file_df_build)
     df_build.to_csv(excel_file_path, index=False)
     
-    print(f'ENDIN MODUL mod_data_build\n')
+    print(f'ENDING MODUL mod_data_build\n')
     return df_build
 

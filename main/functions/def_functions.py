@@ -5,10 +5,10 @@
 Created on Mon Nov  8 22:54:48 2023
 @author: javier
 """
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import random
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
 
