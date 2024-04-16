@@ -99,6 +99,14 @@ def class_weight(df_preprocessing):
 #    w0 = (1/c0) * (len(df_preprocessing)) / 2
  #   w1 = (1/c1) * (len(df_preprocessing)) / 2
   #  return {0: w0, 1:w1}
+  
+  
+def print_results(ev_results):
+    
+    print("Best epoch    Valid accuracy:", round(ev_results['best_valid_epoch_accu'], 2))
+    print("Best epoch    Valid AUC     :", round(ev_results['best_valid_epoch_AUC'], 2))
+    print("Best accuracy Valid data    :", round(ev_results['best_valid_accu'], 2))
+    print("Best AUC      Valid data    :", round(ev_results['best_valid_AUC'], 2))
     
 def evaluate_history(history):
 
@@ -176,7 +184,7 @@ def create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_
     return df_results
 
 
-def plot_loss(history):
+def plots_loss(history):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 2)
     epochs = range(1, len(history.history['loss']) + 1)
@@ -189,7 +197,7 @@ def plot_loss(history):
     plt.show()
     
 
-def plot_accu(history):
+def plots_accu(history):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 2)
     epochs = range(1, len(history.history['accuracy']) + 1)
@@ -201,7 +209,7 @@ def plot_accu(history):
     plt.legend()
     plt.show()
     
-def plot_aucr(history):
+def plots_aucr(history):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 2)
     epochs = range(1, len(history.history['AUC']) + 1)

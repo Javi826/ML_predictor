@@ -16,8 +16,6 @@ def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_f
     for cutoff_date in initn_date_range:
         #print(f"Pipeline for {data_type}: start with lags = {lags}, initn_date_range = {cutoff_date}, endin_date_range = {endin_date_range}")
         
-        #df_columns = ['date'] + [col for col in df_preprocessing.columns if col.startswith('lag')] + ['direction'] + ['day_week']
-        #df_date_lag_dir = df_preprocessing[df_columns].copy()
         df_date_lag_dir = df_preprocessing.copy()
                   
         #DATA SPLIT

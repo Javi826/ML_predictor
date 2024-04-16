@@ -11,17 +11,17 @@ import pandas as pd
 
 from modules.mod_init import *
 from paths.paths import path_file_csv,path_base,folder_tra_val_results, path_keras
-from functions.def_functions import plot_loss, plot_accu,plot_aucr, evaluate_history,create_results_df
+from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results
 from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
-from modules.mod_pipeline import mod_pipeline
-from modules.mod_model import build_model,train_model
+from modules.mod_models import build_model, train_model
+from modules.mod_proces_data import process_data
 
 start_time = time.time()
 
 #CALL DATACLEANING
 #------------------------------------------------------------------------------
-start_date = "2000-01-01"
+start_date = "1980-01-01"
 endin_date = "2023-12-31"
 df_data    = pd.read_csv(path_file_csv, header=None, skiprows=1, names=['date','open','high','low','close','adj_close','volume'])
 df_build   = mod_data_build(df_data,start_date,endin_date)
@@ -38,37 +38,20 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 # X_train - y_train | X_valid - y_valid SPLIT DATA - CALL PIPELINE
 #------------------------------------------------------------------------------
 n_features = 1
-endin_data_train  = initn_data_valid = ['2018-01-01']
-endin_data_valid  = '2018-12-31'
+endin_data_train  = initn_data_valid = ['2005-01-01']
+endin_data_valid  = '2005-12-31'
     
-print(f"Starts Processing for lags = {lags} and initn_data_valid = {initn_data_valid}\n")
-
-X_train_techi = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid, lags, n_features, 'X_train_techi')
-X_train_month = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid, lags, n_features, 'X_train_month')
-X_train_dweek = mod_pipeline(df_preprocess, endin_data_train, endin_data_valid, lags, n_features, 'X_train_dweek')
-
-X_valid_techi = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'X_valid_techi')
-X_valid_month = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'X_valid_month')
-X_valid_dweek = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'X_valid_dweek')
-
-X_train = [X_train_techi, X_train_month, X_train_dweek]
-X_valid = [X_valid_techi, X_valid_month, X_valid_dweek]
-
-y_valid = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'y_valid')
-y_train = mod_pipeline(df_preprocess, initn_data_valid, endin_data_valid, lags, n_features, 'y_train')
+X_train, X_valid, y_train, y_valid = process_data(df_preprocess, endin_data_train, endin_data_valid, initn_data_valid, lags, n_features)
 
 #VARIABLES
 #------------------------------------------------------------------------------
-n_features = 1
 optimizers = 'adam'
-
 dropout_ra = 0.1
 n_neur1_ra = 50
 n_neur2_ra = int(n_neur1_ra / 2)
 n_neur3_ra = 10
 le_rate_ra = 0.001
 l2_regu_ra = 0.001
-patiens_ra = 100
 
 #BUILD MODEL
 #------------------------------------------------------------------------------
@@ -77,25 +60,23 @@ model = build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, le_rate_ra, 
 #TRAIN MODEL
 #------------------------------------------------------------------------------
 batchs_ra = 32
-patien_ra = 100
 epochs_ra = 100
+patien_ra = 100
+
 history   = train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras)
 
 #EVALUATE MODEL + SAVE ON DATAFRAME + PRINTS
 #------------------------------------------------------------------------------
 ev_results = evaluate_history(history)
-df_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patiens_ra, ev_results)
+df_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
 
-print("Best epoch    Valid accuracy:", round(ev_results['best_valid_epoch_accu'], 2))
-print("Best epoch    Valid AUC     :", round(ev_results['best_valid_epoch_AUC'], 2))
-print("Best accuracy Valid data    :", round(ev_results['best_valid_accu'], 2))
-print("Best AUC      Valid data    :", round(ev_results['best_valid_AUC'], 2))
-
-#PLOTS TRAIN
+#PLOTS & PRINTS TRAIN
 #------------------------------------------------------------------------------
-plot_loss(history)
-plot_accu(history)
-plot_aucr(history)
+print_results(ev_results)
+
+plots_loss(history)
+plots_accu(history)
+plots_aucr(history)
 
 #FILES SAVING
 #------------------------------------------------------------------------------
