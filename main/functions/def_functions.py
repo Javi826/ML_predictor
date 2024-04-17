@@ -103,40 +103,41 @@ def class_weight(df_preprocessing):
   
 def print_results(ev_results):
     
-    print("Best epoch    Valid accuracy:", round(ev_results['best_valid_epoch_accu'], 2))
-    print("Best epoch    Valid AUC     :", round(ev_results['best_valid_epoch_AUC'], 2))
-    print("Best accuracy Valid data    :", round(ev_results['best_valid_accu'], 2))
-    print("Best AUC      Valid data    :", round(ev_results['best_valid_AUC'], 2))
+   print("Best epoch    Valid accuracy:", round(ev_results['best_valid_epoch_accu'], 2))
+   print("Best epoch    Valid AUC     :", round(ev_results['best_valid_epoch_AUC'], 2))
+   print("Best accuracy Valid data    :", round(ev_results['best_valid_accu'], 2))
+   print("Best AUC      Valid data    :", round(ev_results['best_valid_AUC'], 2))
+
     
 def evaluate_history(history):
 
-    metrics_history = pd.DataFrame(history.history)
-    metrics_history.index += 1
+    ev_results = pd.DataFrame(history.history)
+    ev_results.index += 1
 
-    # Bests TRAIN Metrics
-    best_train_loss       = metrics_history['loss'].min()
-    best_train_accu       = metrics_history['accuracy'].max()
-    best_train_AUCr       = metrics_history['AUC'].max()
-    best_train_epoch_loss = metrics_history['loss'].idxmin()
-    best_train_epoch_accu = metrics_history['accuracy'].idxmax()
-    best_train_epoch_AUCr = metrics_history['AUC'].idxmax()
+    #BEST TRAIN Metrics
+    best_train_loss       = ev_results['loss'].min()
+    best_train_accu       = ev_results['accuracy'].max()
+    best_train_AUCr       = ev_results['AUC'].max()
+    best_train_epoch_loss = ev_results['loss'].idxmin()
+    best_train_epoch_accu = ev_results['accuracy'].idxmax()
+    best_train_epoch_AUCr = ev_results['AUC'].idxmax()
     
-    # Bests VALID Metrics    
-    best_valid_loss       = metrics_history['val_loss'].min()
-    best_valid_accu       = metrics_history['val_accuracy'].max()
-    best_valid_AUCr       = metrics_history['val_AUC'].max()
-    best_valid_epoch_loss = metrics_history['val_loss'].idxmin()
-    best_valid_epoch_accu = metrics_history['val_accuracy'].idxmax()
-    best_valid_epoch_AUCr = metrics_history['val_AUC'].idxmax()
+    #BEST VALID Metrics    
+    best_valid_loss       = ev_results['val_loss'].min()
+    best_valid_accu       = ev_results['val_accuracy'].max()
+    best_valid_AUCr       = ev_results['val_AUC'].max()
+    best_valid_epoch_loss = ev_results['val_loss'].idxmin()
+    best_valid_epoch_accu = ev_results['val_accuracy'].idxmax()
+    best_valid_epoch_AUCr = ev_results['val_AUC'].idxmax()
 
-    # LAST Metrics
-    last_train_loss = history.history['loss'][-1]
-    last_train_accu = history.history['accuracy'][-1]
-    last_train_AUCr = history.history['AUC'][-1]
-    last_valid_loss = history.history['val_loss'][-1]
-    last_valid_accu = history.history['val_accuracy'][-1]
-    last_valid_AUCr = history.history['val_AUC'][-1]
-
+    #LAST Metrics
+    last_train_loss = ev_results['loss'].iloc[-1]
+    last_train_accu = ev_results['accuracy'].iloc[-1]
+    last_train_AUCr = ev_results['AUC'].iloc[-1]
+    last_valid_loss = ev_results['val_loss'].iloc[-1]
+    last_valid_accu = ev_results['val_accuracy'].iloc[-1]
+    last_valid_AUCr = ev_results['val_AUC'].iloc[-1]
+    
     return {
         'best_train_loss': best_train_loss,
         'best_train_accu': best_train_accu,
@@ -161,27 +162,27 @@ def evaluate_history(history):
 
     
 def create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
-    df_results = [{
-        'Lags               ': lags,
-        'Cutoff Date        ': initn_data_valid,
-        'Dropout            ': dropout,
-        'Neurons            ': n_neurons_1,
-        'Batch Size         ': batch_s,
-        'Learning Rate      ': le_rate,
-        'Optimizer          ': optimizers,
-        'Patience           ': patiences,
-        'Last train_Loss    ': ev_results['last_train_loss'],
-        'Last talid_Loss    ': ev_results['last_valid_loss'],
-        'Last train_accuracy': ev_results['last_train_accu'],
-        'Last talid_accuracy': ev_results['last_valid_accu'],
-        'Best train_accuracy': ev_results['best_train_accu'],
-        'Best valid_accuracy': ev_results['best_valid_accu'],
-        'Best train_epcoh   ': ev_results['best_train_epoch_accu'],
-        'Best valid_epoch   ': ev_results['best_valid_epoch_accu'],
-        'Best train_AUC     ': ev_results['best_train_AUC'],
-        'Best valid_AUC     ': ev_results['best_valid_AUC']
-    }]
-    return df_results
+    df_tra_val_results = pd.DataFrame({
+        'Lags': [lags],
+        'Cutoff Date': [initn_data_valid],
+        'Dropout': [dropout],
+        'Neurons': [n_neurons_1],
+        'Batch Size': [batch_s],
+        'Learning Rate': [le_rate],
+        'Optimizer': [optimizers],
+        'Patience': [patiences],
+        'Last train_Loss': [ev_results['last_train_loss']],
+        'Last valid_Loss': [ev_results['last_valid_loss']],
+        'Last train_accuracy': [ev_results['last_train_accu']],
+        'Last valid_accuracy': [ev_results['last_valid_accu']],
+        'Best train_accuracy': [ev_results['best_train_accu']],
+        'Best valid_accuracy': [ev_results['best_valid_accu']],
+        'Best train_epoch': [ev_results['best_train_epoch_accu']],
+        'Best valid_epoch': [ev_results['best_valid_epoch_accu']],
+        'Best train_AUC': [ev_results['best_train_AUC']],
+        'Best valid_AUC': [ev_results['best_valid_AUC']]
+    })
+    return df_tra_val_results
 
 
 def plots_loss(history):

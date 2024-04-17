@@ -38,8 +38,8 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 # X_train - y_train | X_valid - y_valid SPLIT DATA - CALL PIPELINE
 #------------------------------------------------------------------------------
 n_features = 1
-endin_data_train  = initn_data_valid = ['2005-01-01']
-endin_data_valid  = '2005-12-31'
+endin_data_train  = initn_data_valid = ['2018-01-01']
+endin_data_valid  = '2018-12-31'
     
 X_train, X_valid, y_train, y_valid = process_data(df_preprocess, endin_data_train, endin_data_valid, initn_data_valid, lags, n_features)
 
@@ -65,24 +65,20 @@ patien_ra = 100
 
 history   = train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras)
 
-#EVALUATE MODEL + SAVE ON DATAFRAME + PRINTS
+#EVALUATE MODEL Training
 #------------------------------------------------------------------------------
 ev_results = evaluate_history(history)
-df_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
-
-#PLOTS & PRINTS TRAIN
-#------------------------------------------------------------------------------
 print_results(ev_results)
 
+#PLOTS MODEL Training
+#------------------------------------------------------------------------------
 plots_loss(history)
 plots_accu(history)
 plots_aucr(history)
 
-#FILES SAVING
+#ENDING +  SAVING
 #------------------------------------------------------------------------------
-print(f"\nEnding Processing ending for lags = {lags} and initn_data_valid = {initn_data_valid}\n")
-
-df_tra_val_results = pd.DataFrame(df_results)
+df_tra_val_results = create_results_df(lags, initn_data_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
 excel_file_path    = os.path.join(path_base, folder_tra_val_results,f"df_tra_val_all.xlsx")
 df_tra_val_results.to_excel(excel_file_path, index=False)
 print("All Training results saved in: 'tra_val_results/df_tra_val_results.xlsx'")
