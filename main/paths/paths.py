@@ -23,9 +23,9 @@ file_summary_stats     = 'df_summary_stats'
 folder_summary_stats   = "outputs/summary_stats"
 path_summary_stats     = os.path.join(path_base, folder_summary_stats, file_summary_stats)
 
-file_preprocessing     = 'df_preprocessing.xlsx'
-folder_preprocessing   = "inputs/preprocessing"
-path_preprocessing     = os.path.join(path_base, folder_preprocessing, file_preprocessing)
+file_preprocess        = 'df_preprocessing.xlsx'
+folder_preprocess      = "inputs/preprocess"
+path_preprocess        = os.path.join(path_base, folder_preprocess, file_preprocess)
 
 file_tra_val_results   = 'df_tra_val_results.xlsx'
 folder_tra_val_results = "results/tra_val_results"

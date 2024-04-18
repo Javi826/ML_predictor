@@ -8,8 +8,8 @@ Created on Mon Nov  8 22:54:48 2023
 import os
 import pandas as pd
 import numpy as np
-from paths.paths import path_base,folder_preprocessing
-from functions.def_functions import filter_data_by_date_range, df_plots, diff_series,one_hot_months
+from paths.paths import path_base,folder_preprocess
+from functions.def_functions import filter_data_by_date_range, df_plots, diff_series
 
 def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags):
     print(f'\nSTARTS MODUL mod_preprocess')
@@ -37,7 +37,7 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags):
     
     # SAVE Dataframe
     file_suffix = f"_{str(lags).zfill(2)}_{prepro_start_date}_{prepro_endin_date}.xlsx"
-    excel_file_path = os.path.join(path_base, folder_preprocessing, f"df_preprocess{file_suffix}")
+    excel_file_path = os.path.join(path_base, folder_preprocess, f"df_preprocess{file_suffix}")
     df_preprocess.to_excel(excel_file_path, index=False)
     
     print(f'ENDING MODUL mod_preprocess \n')

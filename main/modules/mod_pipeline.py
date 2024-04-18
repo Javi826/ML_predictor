@@ -10,20 +10,38 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-def mod_pipeline(df_preprocessing, initn_date_range, endin_date_range, lags, n_features, data_type):
+def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features, data_type):
     
-    
-    for cutoff_date in initn_date_range:
-        #print(f"Pipeline for {data_type}: start with lags = {lags}, initn_date_range = {cutoff_date}, endin_date_range = {endin_date_range}")
+    if not isinstance(start_train, list): start_train = [start_train]
+    if not isinstance(endin_train, list): endin_train = [endin_train]
+    if not isinstance(start_valid, list): start_valid = [start_valid]
+    if not isinstance(endin_valid, list): endin_valid = [endin_valid]    
+
+    for i in range(len(start_train)):
         
-        df_date_lag_dir = df_preprocessing.copy()
+        start_train_i = start_train[i]
+        endin_train_i = endin_train[i]
+        start_valid_i = start_valid[i]
+        endin_valid_i = endin_valid[i]
+        
+        df_date_lag_dir = df_preprocess.copy()
                   
         #DATA SPLIT
         #------------------------------------------------------------------------------  
         
-        train_data = df_date_lag_dir[df_date_lag_dir['date'] <= cutoff_date]
-        valid_data = df_date_lag_dir[(df_date_lag_dir['date'] > cutoff_date) & (df_date_lag_dir['date'] <= endin_date_range)]
-        tests_data = df_date_lag_dir[(df_date_lag_dir['date'] > cutoff_date) & (df_date_lag_dir['date'] <= endin_date_range)]
+        train_data = df_date_lag_dir[(df_date_lag_dir['date'] > start_train_i) & (df_date_lag_dir['date'] <= endin_train_i)]
+        valid_data = df_date_lag_dir[(df_date_lag_dir['date'] > start_valid_i) & (df_date_lag_dir['date'] <= endin_valid_i)]
+        #tests_data = df_date_lag_dir[(df_date_lag_dir['date'] > start_date) & (df_date_lag_dir['date'] <= endin_date)]
+        #print(i)
+        #print(train_data['date'])
+        
+        train_file = f"train_data_{i}.xlsx"
+        valid_file = f"valid_data_{i}.xlsx"
+        #tests_file = f"tests_data_{i}.xlsx"
+        
+        train_data.to_excel(train_file, index=False)
+        valid_data.to_excel(valid_file, index=False)
+        #tests_data.to_excel(tests_file, index=False)
         
         dlags_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('lag')]
         month_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('month')]

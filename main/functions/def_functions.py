@@ -161,10 +161,10 @@ def evaluate_history(history):
 
 
     
-def create_results_df(lags, initn_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
+def create_results_df(lags, start_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
     df_tra_val_results = pd.DataFrame({
         'Lags': [lags],
-        'Cutoff Date': [initn_data_valid],
+        'Cutoff Date': [start_data_valid],
         'Dropout': [dropout],
         'Neurons': [n_neurons_1],
         'Batch Size': [batch_s],
@@ -257,4 +257,25 @@ def plots_histograms(dataframe, columns_of_interest):
     # design
     plt.tight_layout()
     plt.show()
+    
+    
+def split_series(df, n_years_train, m_years_valid):
+
+    start_date = df['date'].min()
+    endin_date = df['date'].max()
+    print(start_date)
+    print(endin_date)
+
+    time_intervals = []
+    while start_date < endin_date:
+        endin_train = start_date.replace(year=start_date.year + n_years_train)
+        start_valid = endin_train
+        endin_valid = start_valid.replace(year=start_valid.year + m_years_valid)
+
+        time_intervals.append((start_date, endin_train, start_valid, endin_valid))
+
+        start_date = endin_valid
+    #print(time_intervals)
+
+    return time_intervals
 
