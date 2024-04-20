@@ -263,11 +263,10 @@ def split_series(df, n_years_train, m_years_valid):
 
     start_date = df['date'].min()
     endin_date = df['date'].max()
-    print(start_date)
-    print(endin_date)
 
     time_intervals = []
     while start_date < endin_date:
+        
         endin_train = start_date.replace(year=start_date.year + n_years_train)
         start_valid = endin_train
         endin_valid = start_valid.replace(year=start_valid.year + m_years_valid)
@@ -275,7 +274,6 @@ def split_series(df, n_years_train, m_years_valid):
         time_intervals.append((start_date, endin_train, start_valid, endin_valid))
 
         start_date = endin_valid
-    #print(time_intervals)
 
     return time_intervals
 

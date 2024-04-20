@@ -8,7 +8,6 @@ Created on Fri Mar  1 23:33:28 2024
 import os
 import time
 import pandas as pd
-import numpy as np
 
 from modules.mod_init import *
 from paths.paths import path_file_csv,path_base,folder_tra_val_results, path_keras
@@ -17,8 +16,6 @@ from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
 from modules.mod_models import build_model, train_model
 from modules.mod_proces_data import mod_process_data
-
-from datetime import datetime, timedelta
 
 start_time = time.time()
 
@@ -44,15 +41,21 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 #------------------------------------------------------------------------------
 n_features     = 1 
 
-n_years_train  = 4
+n_years_train  = 19
 m_years_valid  = 1
 time_intervals = split_series(df_preprocess, n_years_train, m_years_valid)
+
 
 all_train_results = []
 
 for interval in time_intervals:
-    #print(interval)
+    
     start_train, endin_train, start_valid, endin_valid = interval
+    
+    start_train = [start_train]
+    endin_train = [endin_train]
+    start_valid = [start_valid]
+    endin_valid = [endin_valid] 
   
     X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features)
 
@@ -96,13 +99,12 @@ for interval in time_intervals:
     excel_file_path    = os.path.join(path_base, folder_tra_val_results,f"df_tra_val_all.xlsx")
     df_tra_val_results.to_excel(excel_file_path, index=False)
     print("All Training results saved in: 'tra_val_results/df_tra_val_results.xlsx'")
-    
+  
+
+#CROSS-VALIDATION RESULTS
+#------------------------------------------------------------------------------
 df_train_results = pd.DataFrame(all_train_results)
-
-# Calcular la media de todas las métricas
-mean_results = df_train_results.mean()
-
-# Imprimir los resultados promedio
+mean_results     = df_train_results.mean()
 print("Mean results:")
 print(mean_results)
     

@@ -10,7 +10,6 @@ from modules.mod_pipeline import mod_pipeline
 
 def mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features):
     
-    print(start_train)
         
     X_train_techi = mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features,'X_train_techi')
     X_train_month = mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features,'X_train_month')
