@@ -37,15 +37,13 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 
 #CROSS-VALIDATION Split
 #------------------------------------------------------------------------------
-# X_train - y_train | X_valid - y_valid SPLIT DATA - CALL PIPELINE
+# X_train - y_train | X_valid - y_valid SPLIT DATA - CALL PIPEdLINE
 #------------------------------------------------------------------------------
 n_features     = 1 
 
 n_years_train  = 19
 m_years_valid  = 1
 time_interval  = time_intervals(df_preprocess, n_years_train, m_years_valid)
-
-print(time_interval)
 
 all_train_results = []
 
@@ -60,7 +58,7 @@ for interval in time_interval:
     #------------------------------------------------------------------------------
     optimizers = 'adam'
     dropout_ra = 0.1
-    n_neur1_ra = 50
+    n_neur1_ra = 20
     n_neur2_ra = int(n_neur1_ra / 2)
     n_neur3_ra = 10
     le_rate_ra = 0.001
@@ -73,7 +71,7 @@ for interval in time_interval:
     #TRAIN MODEL
     #------------------------------------------------------------------------------
     batchs_ra = 32
-    epochs_ra = 100
+    epochs_ra = 20
     patien_ra = 100
     
     history   = train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras)

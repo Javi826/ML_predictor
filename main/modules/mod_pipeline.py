@@ -25,18 +25,6 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     train_data = df_date_lag_dir[(df_date_lag_dir['date'] >= start_train_i) & (df_date_lag_dir['date'] <  endin_train_i)]
     valid_data = df_date_lag_dir[(df_date_lag_dir['date']  > start_valid_i) & (df_date_lag_dir['date'] <= endin_valid_i)]
     
-    #print(train_data['date'])
-    #print(valid_data['date'])
-    
-    excel_filename_valid = f'valid_data_subset_{start_valid_i}.xlsx'
-    excel_filename_train = f'train_data_subset_{start_valid_i}.xlsx'
-    
-    
-    # Guardar el DataFrame valid_data_subset en un archivo de Excel
-    valid_data.to_excel(excel_filename_valid, index=False)
-    train_data.to_excel(excel_filename_train, index=False)
-    
-    
     dlags_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('lag')]
     month_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('month')]
        

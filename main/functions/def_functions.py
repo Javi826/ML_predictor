@@ -100,14 +100,6 @@ def class_weight(df_preprocessing):
  #   w1 = (1/c1) * (len(df_preprocessing)) / 2
   #  return {0: w0, 1:w1}
   
-  
-def print_results(ev_results):
-    
-   print("Best epoch    Valid accuracy:", round(ev_results['best_valid_epoch_accu'], 2))
-   print("Best epoch    Valid AUC     :", round(ev_results['best_valid_epoch_AUC'], 2))
-   print("Best accuracy Valid data    :", round(ev_results['best_valid_accu'], 2))
-   print("Best AUC      Valid data    :", round(ev_results['best_valid_AUC'], 2))
-
     
 def evaluate_history(history):
 
@@ -159,6 +151,12 @@ def evaluate_history(history):
         'last_valid_AUC': last_valid_AUCr
     }
 
+def print_results(ev_results):
+    
+   print("best_valid_epoch_accu:", round(ev_results['best_valid_epoch_accu'], 2))
+   print("best_valid_epoch_AUC :", round(ev_results['best_valid_epoch_AUC'], 2))
+   print("best_valid_accu      :", round(ev_results['best_valid_accu'], 2))
+   print("best_valid_AUC       :", round(ev_results['best_valid_AUC'], 2))
 
     
 def create_results_df(lags, start_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
