@@ -12,12 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features, data_type):
     
-    
-    start_train_i = start_train[0]
-    endin_train_i = endin_train[0]
-    start_valid_i = start_valid[0]
-    endin_valid_i = endin_valid[0]
-    
+    start_train_i, endin_train_i, start_valid_i, endin_valid_i = start_train[0], endin_train[0], start_valid[0], endin_valid[0]   
     df_date_lag_dir = df_preprocess.copy()
           
     #DATA SPLIT

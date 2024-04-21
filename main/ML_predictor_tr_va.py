@@ -11,7 +11,7 @@ import pandas as pd
 
 from modules.mod_init import *
 from paths.paths import path_file_csv,path_base,folder_tra_val_results, path_keras
-from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results,split_series
+from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results,time_intervals
 from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
 from modules.mod_models import build_model, train_model
@@ -26,7 +26,6 @@ endin_date = "2023-12-31"
 df_data    = pd.read_csv(path_file_csv, header=None, skiprows=1, names=['date','open','high','low','close','adj_close','volume'])
 df_build   = mod_data_build(df_data,start_date,endin_date)
 
-
 #CALL PREPROCESSING
 #------------------------------------------------------------------------------
 prepro_start_date = "2000-01-01"
@@ -34,6 +33,7 @@ prepro_endin_date = "2019-12-31"
 lags = 5
 
 df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,lags)
+
 
 #CROSS-VALIDATION Split
 #------------------------------------------------------------------------------
@@ -43,20 +43,17 @@ n_features     = 1
 
 n_years_train  = 19
 m_years_valid  = 1
-time_intervals = split_series(df_preprocess, n_years_train, m_years_valid)
+time_interval  = time_intervals(df_preprocess, n_years_train, m_years_valid)
 
+print(time_interval)
 
 all_train_results = []
 
-for interval in time_intervals:
+for interval in time_interval:
     
     start_train, endin_train, start_valid, endin_valid = interval
-    
-    start_train = [start_train]
-    endin_train = [endin_train]
-    start_valid = [start_valid]
-    endin_valid = [endin_valid] 
-  
+    start_train, endin_train, start_valid, endin_valid = [[start_train], [endin_train], [start_valid], [endin_valid]]
+      
     X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features)
 
     #VARIABLES
