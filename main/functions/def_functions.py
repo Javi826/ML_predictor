@@ -259,10 +259,10 @@ def plots_histograms(dataframe, columns_of_interest):
     plt.show()
     
     
-def split_series(df, n_years_train, m_years_valid):
+def time_intervals(df_preprocess, n_years_train, m_years_valid):
 
-    start_date = df['date'].min()
-    endin_date = df['date'].max()
+    start_date = df_preprocess['date'].min()
+    endin_date = df_preprocess['date'].max()
 
     time_intervals = []
     while start_date < endin_date:
@@ -270,8 +270,15 @@ def split_series(df, n_years_train, m_years_valid):
         endin_train = start_date.replace(year=start_date.year + n_years_train)
         start_valid = endin_train
         endin_valid = start_valid.replace(year=start_valid.year + m_years_valid)
+        
+        if endin_valid > endin_date: endin_valid = endin_date
 
-        time_intervals.append((start_date, endin_train, start_valid, endin_valid))
+        start_date_str  = start_date.strftime('%Y-%m-%d')
+        endin_train_str = endin_train.strftime('%Y-%m-%d')
+        start_valid_str = start_valid.strftime('%Y-%m-%d')
+        endin_valid_str = endin_valid.strftime('%Y-%m-%d')
+
+        time_intervals.append((start_date_str, endin_train_str, start_valid_str, endin_valid_str))
 
         start_date = endin_valid
 
