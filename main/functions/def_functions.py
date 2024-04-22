@@ -159,10 +159,13 @@ def print_results(ev_results):
    print("best_valid_AUC       :", round(ev_results['best_valid_AUC'], 2))
 
     
-def create_results_df(lags, start_data_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
+def create_results_df(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
     df_tra_val_results = pd.DataFrame({
         'Lags': [lags],
-        'Cutoff Date': [start_data_valid],
+        'n_years_train': [n_years_train],
+        'm_years_train': [m_years_valid],
+        'Start_train': [start_train],
+        'Start_valid': [start_valid],
         'Dropout': [dropout],
         'Neurons': [n_neurons_1],
         'Batch Size': [batch_s],
@@ -181,6 +184,32 @@ def create_results_df(lags, start_data_valid, dropout, n_neurons_1, batch_s, le_
         'Best valid_AUC': [ev_results['best_valid_AUC']]
     })
     return df_tra_val_results
+
+def create_mean_results_df(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, all_train_results):
+    df_mean_results = pd.DataFrame({
+        'Lags': [lags],
+        'n_years_train': [n_years_train],
+        'm_years_train': [m_years_valid],
+        'Start_train': [start_train],
+        'Start_valid': [start_valid],
+        'Dropout': [dropout],
+        'Neurons': [n_neurons_1],
+        'Batch Size': [batch_s],
+        'Learning Rate': [le_rate],
+        'Optimizer': [optimizers],
+        'Patience': [patiences],
+        'Last train_Loss': [all_train_results['last_train_loss']],
+        'Last valid_Loss': [all_train_results['last_valid_loss']],
+        'Last train_accuracy': [all_train_results['last_train_accu']],
+        'Last valid_accuracy': [all_train_results['last_valid_accu']],
+        'Best train_accuracy': [all_train_results['best_train_accu']],
+        'Best valid_accuracy': [eall_train_results['best_valid_accu']],
+        'Best train_epoch': [all_train_results['best_train_epoch_accu']],
+        'Best valid_epoch': [ev_results['best_valid_epoch_accu']],
+        'Best train_AUC': [ev_results['best_train_AUC']],
+        'Best valid_AUC': [ev_results['best_valid_AUC']]
+    })
+    return df_mean_results
 
 
 def plots_loss(history):

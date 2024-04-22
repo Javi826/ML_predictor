@@ -10,8 +10,8 @@ import time
 import pandas as pd
 
 from modules.mod_init import *
-from paths.paths import path_file_csv,path_base,folder_tra_val_results, path_keras
-from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results,time_intervals
+from paths.paths import path_file_csv,path_base,folder_tra_val_results,folder_mean_results, path_keras
+from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df,create_mean_results_df, print_results,time_intervals
 from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
 from modules.mod_models import build_model, train_model
@@ -41,28 +41,30 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 #------------------------------------------------------------------------------
 n_features     = 1 
 
-n_years_train  = 19
+n_years_train  = 9
 m_years_valid  = 1
 time_interval  = time_intervals(df_preprocess, n_years_train, m_years_valid)
+#print("Starts for time_interval:", time_interval)
 
 all_train_results = []
-
 for interval in time_interval:
     
     start_train, endin_train, start_valid, endin_valid = interval
     start_train, endin_train, start_valid, endin_valid = [[start_train], [endin_train], [start_valid], [endin_valid]]
+    print("-" * 79)
+    print(f"Starts Training: {n_years_train} years for training and {m_years_valid} years for validation. \nInterval       : {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
       
     X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features)
 
     #VARIABLES
     #------------------------------------------------------------------------------
-    optimizers = 'adam'
     dropout_ra = 0.1
     n_neur1_ra = 20
     n_neur2_ra = int(n_neur1_ra / 2)
     n_neur3_ra = 10
     le_rate_ra = 0.001
     l2_regu_ra = 0.001
+    optimizers = 'adam'
     
     #BUILD MODEL
     #------------------------------------------------------------------------------
@@ -90,20 +92,28 @@ for interval in time_interval:
     
     #ENDING +  SAVING
     #------------------------------------------------------------------------------
-    df_tra_val_results = create_results_df(lags, start_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
-    excel_file_path    = os.path.join(path_base, folder_tra_val_results,f"df_tra_val_all.xlsx")
+    df_tra_val_results = create_results_df(lags,n_years_train,m_years_valid, start_train,start_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
+    
+    excel_file_path = os.path.join(path_base, folder_tra_val_results, f"df_tra_val_all_{str(n_years_train).zfill(2)}_{str(m_years_valid).zfill(2)}_{start_train[0]}.xlsx")
     df_tra_val_results.to_excel(excel_file_path, index=False)
-    print("All Training results saved in: 'tra_val_results/df_tra_val_results.xlsx'")
+    print("\nTraining results in  : exel file results\n")
+    print(f"Ending Training: {n_years_train} years for training and {m_years_valid} years for validation. \nInterval       : {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
   
 
 #CROSS-VALIDATION RESULTS
 #------------------------------------------------------------------------------
-df_train_results = pd.DataFrame(all_train_results)
-mean_results     = df_train_results.mean()
+df_mean_results = create_mean_results_df(lags,n_years_train,m_years_valid, start_train,start_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, all_train_results)
+excel_file_path = "df_train_results.xlsx"
+df_mean_results.to_excel(excel_file_path, index=False)
+
+
+
+print("-" * 79)
 print("Mean results:")
-print(mean_results)
+print(df_means_results)
     
 os.system("afplay /System/Library/Sounds/Ping.aiff")
 elapsed_time   = time.time() - start_time
 elapsed_hours, elapsed_minutes = divmod(elapsed_time / 60, 60)
-print(f"Total time taken for the process: {int(elapsed_hours)} hours, {int(elapsed_minutes)} minutes")
+print("*" * 79)
+print(f"Total time take to train: {int(elapsed_hours)} hours, {int(elapsed_minutes)} minutes")

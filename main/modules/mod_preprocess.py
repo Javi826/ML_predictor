@@ -12,7 +12,7 @@ from functions.def_functions import filter_data_by_date_range, df_plots, diff_se
 
 def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags):
     
-    print(f'\nSTARTS MODUL mod_preprocess')
+    print(f'\nStarts mod_preprocess')
     
     df_build_filter  = filter_data_by_date_range(df_build, prepro_start_date, prepro_endin_date)    
     
@@ -40,5 +40,5 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags):
     excel_file_path = os.path.join(path_base, folder_preprocess, f"df_preprocess{file_suffix}")
     df_preprocess.to_excel(excel_file_path, index=False)
     
-    print(f'ENDING MODUL mod_preprocess \n')
+    print(f'Ending mod_preprocess \n')
     return df_preprocess
