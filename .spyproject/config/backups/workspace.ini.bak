@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['main/ML_predictor_tr_va.py', 'main/functions/def_functions.py']
+recent_files = ['main/ML_predictor_tr_va.py', 'main/modules/mod_proces_data.py', 'main/modules/mod_preprocess.py', 'main/paths/paths.py', 'main/functions/def_functions.py']
 
 [main]
 version = 0.2.0
