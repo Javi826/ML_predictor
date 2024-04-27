@@ -11,7 +11,7 @@ import pandas as pd
 
 from modules.mod_init import *
 from paths.paths import path_file_csv,path_base,folder_tra_val_results,folder_mean_results, path_keras
-from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results,time_intervals,all_training
+from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results,time_intervals,cross_training
 from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
 from modules.mod_models import build_model, train_model
@@ -44,66 +44,65 @@ n_features     = 1
 n_years_train  = 9
 m_years_valid  = 1
 time_interval  = time_intervals(df_preprocess, n_years_train, m_years_valid)
-#print("Starts for time_interval:", time_interval)
-
-all_train_results = []
-for interval in time_interval:
-    
-    start_train, endin_train, start_valid, endin_valid = interval
-    start_train, endin_train, start_valid, endin_valid = [[start_train], [endin_train], [start_valid], [endin_valid]]
-    print("-" * 79)
-    print(f"Starts Training for  : {n_years_train} years for training and {m_years_valid} years for validation. \nTrain/Valids Interval: {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
-      
-    X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features)
-
-    #VARIABLES
-    #------------------------------------------------------------------------------
-    dropout_ra = 0.1
-    n_neur1_ra = 20
-    n_neur2_ra = int(n_neur1_ra / 2)
-    n_neur3_ra = 10
-    le_rate_ra = 0.001
-    l2_regu_ra = 0.001
-    optimizers = 'adam'
-    
-    #BUILD MODEL
-    #------------------------------------------------------------------------------
-    model = build_model(dropout_ra, n_neur1_ra, n_neur2_ra, n_neur3_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features)
-    
-    #TRAIN MODEL
-    #------------------------------------------------------------------------------
-    batchs_ra = 32
-    epochs_ra = 20
-    patien_ra = 100
-    
-    history   = train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras)
-    
-    #EVALUATE MODEL Training
-    #------------------------------------------------------------------------------
-    ev_results = evaluate_history(lags,n_years_train,m_years_valid, start_train, start_valid,dropout_ra,n_neur1_ra,batchs_ra,le_rate_ra,optimizers,patien_ra,history)
-    all_train_results.append(ev_results)
-    print_results(ev_results)
-    
-    #PLOTS MODEL Training
-    #------------------------------------------------------------------------------
-    plots_loss(history)
-    plots_accu(history)
-    plots_aucr(history)
-    
-    #ENDING +  SAVING
-    #------------------------------------------------------------------------------
-    df_tra_val_results = create_results_df(lags,n_years_train,m_years_valid, start_train,start_valid, dropout_ra, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
-    excel_file_path    = os.path.join(path_base, folder_tra_val_results, f"df_tra_val_all_{str(n_years_train).zfill(2)}_{str(m_years_valid).zfill(2)}_{start_train[0]}.xlsx")
-    df_tra_val_results.to_excel(excel_file_path, index=False)
-    print("\nTraining results in  : exel file results\n")
-    print(f"Ending Training: {n_years_train} years for training and {m_years_valid} years for validation. \nInterval       : {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
-  
-#CROSS-VALIDATION RESULTS
+#VARIABLES
 #------------------------------------------------------------------------------
+dropout_ra = [0.1, 0.2]
+n_neur1_ra = 20
+n_neur2_ra = int(n_neur1_ra / 2)
+n_neur3_ra = 10
+le_rate_ra = 0.001
+l2_regu_ra = 0.001
+optimizers = 'adam'
+batchs_ra  = 32
+epochs_ra  = 20
+patien_ra  = 100
 
-df_all_training = all_training(all_train_results)
-excel_file_path = os.path.join(path_base, folder_tra_val_results, f"df_all_trainging_{str(n_years_train).zfill(2)}_{str(m_years_valid).zfill(2)}.xlsx")
-df_all_training.to_excel(excel_file_path, index=False)
+for dropout in dropout_ra:
+    print(f"Training with dropout={dropout}")
+    
+    cross_train_results = []
+    for interval in time_interval:
+        
+        start_train, endin_train, start_valid, endin_valid = interval
+        start_train, endin_train, start_valid, endin_valid = [[start_train], [endin_train], [start_valid], [endin_valid]]
+        print("-" * 79)
+        print(f"Starts Training for  : {n_years_train} years for training and {m_years_valid} years for validation. \nTrain/Valids Interval: {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
+          
+        X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features)
+        
+        #BUILD MODEL
+        #------------------------------------------------------------------------------
+        model = build_model(dropout, n_neur1_ra, n_neur2_ra, n_neur3_ra, le_rate_ra, l2_regu_ra, optimizers, lags, n_features)
+        
+        #TRAIN MODEL
+        #------------------------------------------------------------------------------
+        history   = train_model(model, X_train, y_train, X_valid, y_valid, batchs_ra, epochs_ra, patien_ra, path_keras)
+        
+        #EVALUATE MODEL
+        #------------------------------------------------------------------------------
+        ev_results = evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1_ra,batchs_ra,le_rate_ra, optimizers,patien_ra,history)
+        cross_train_results.append(ev_results)
+        print_results(ev_results)
+        
+        #PLOTS MODEL
+        #------------------------------------------------------------------------------
+        plots_loss(history)
+        plots_accu(history)
+        plots_aucr(history)
+        
+        #CROSS-VALIDATION
+        #------------------------------------------------------------------------------
+        df_cross_training = cross_training(cross_train_results)
+        excel_file_path   = os.path.join(path_base, folder_tra_val_results, f"df_cross_trainging_{str(n_years_train).zfill(2)}_{str(m_years_valid).zfill(2)}.xlsx")
+        df_cross_training.to_excel(excel_file_path, index=False)
+        
+#ENDING +  SAVING
+#------------------------------------------------------------------------------
+df_tra_val_results = create_results_df(lags,n_years_train, m_years_valid, start_train,start_valid, dropout, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, ev_results)
+excel_file_path    = os.path.join(path_base, folder_tra_val_results, f"df_tra_val_all_{str(n_years_train).zfill(2)}_{str(m_years_valid).zfill(2)}_{start_train[0]}.xlsx")
+df_tra_val_results.to_excel(excel_file_path, index=False)
+print("\nTraining results in  : exel file results\n")
+print(f"Ending Training for  : {n_years_train} years for training and {m_years_valid} years for validation. \nTrain/Valids Interval: {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
 
 print("-" * 79)    
 os.system("afplay /System/Library/Sounds/Ping.aiff")

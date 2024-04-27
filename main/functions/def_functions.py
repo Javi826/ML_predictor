@@ -101,7 +101,7 @@ def class_weight(df_preprocessing):
   #  return {0: w0, 1:w1}
   
     
-def evaluate_history(lags,n_years_train,m_years_valid,start_train,start_valid,dropout_ra,n_neur1_ra,batchs_ra,le_rate_ra,optimizers,patien_ra,history):
+def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, history):
 
     ev_results = pd.DataFrame(history.history)
     ev_results.index += 1
@@ -136,7 +136,7 @@ def evaluate_history(lags,n_years_train,m_years_valid,start_train,start_valid,dr
         'm_years_train': m_years_valid,
         'Start_train': start_train[0],
         'Start_valid': start_valid[0],
-        'Dropout': dropout_ra,
+        'Dropout': dropout,
         'Neurons': n_neur1_ra,
         'Batch Size': batchs_ra,
         'Learning Rate': le_rate_ra,
@@ -147,7 +147,7 @@ def evaluate_history(lags,n_years_train,m_years_valid,start_train,start_valid,dr
         'best_train_AUC': best_train_AUCr,
         'best_train_epoch_loss': best_train_epoch_loss,
         'best_train_epoch_accu': best_train_epoch_accu,
-        'best_train_epoch_AUCs': best_train_epoch_AUCr,
+        'best_train_epoch_AUC': best_train_epoch_AUCr,
         'best_valid_loss': best_valid_loss,
         'best_valid_accu': best_valid_accu,
         'best_valid_AUC': best_valid_AUCr,
@@ -196,9 +196,9 @@ def create_results_df(lags, n_years_train, m_years_valid, start_train, start_val
     })
     return df_tra_val_results
 
-def all_training(all_training):
+def cross_training(cross_training_results):
 
-    df_all_training = pd.DataFrame(all_training)
+    df_cross_training = pd.DataFrame(cross_training_results)
     
     columns_mean = [
         'best_train_loss', 'best_train_accu', 'best_train_AUC',
@@ -209,13 +209,13 @@ def all_training(all_training):
         'last_valid_loss', 'last_valid_accu', 'last_valid_AUC'
     ]
 
-    mean_values = df_all_training[columns_mean].mean()
+    mean_values = df_cross_training[columns_mean].mean()
 
-    df_all_training = pd.concat([df_all_training, mean_values.to_frame().T], ignore_index=True)
+    df_cross_training = pd.concat([df_cross_training, mean_values.to_frame().T], ignore_index=True)
     print("Mean results:")
     print(mean_values)
 
-    return df_all_training
+    return df_cross_training
 
 def plots_loss(history):
     plt.figure(figsize=(12, 6))
