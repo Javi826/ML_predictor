@@ -212,8 +212,26 @@ def cross_training(cross_training_results):
     mean_values = df_cross_training[columns_mean].mean()
 
     df_cross_training = pd.concat([df_cross_training, mean_values.to_frame().T], ignore_index=True)
-    print("Mean results:")
-    print(mean_values)
+    
+    print("\nMean results:")
+    print("best_train_loss      :", round(mean_values['best_train_loss'], 2))
+    print("best_train_accu      :", round(mean_values['best_train_accu'], 2))
+    print("best_train_AUC       :", round(mean_values['best_train_AUC'], 2))
+    print("best_train_epoch_loss:", round(mean_values['best_train_epoch_loss'], 2))
+    print("best_train_epoch_accu:", round(mean_values['best_train_epoch_accu'], 2))
+    print("best_train_epoch_AUC :", round(mean_values['best_train_epoch_AUC'], 2))
+    print("best_valid_loss      :", round(mean_values['best_valid_loss'], 2))
+    print("best_valid_accu      :", round(mean_values['best_valid_accu'], 2))
+    print("best_valid_AUC       :", round(mean_values['best_valid_AUC'], 2))
+    print("best_valid_epoch_loss:", round(mean_values['best_valid_epoch_loss'], 2))
+    print("best_valid_epoch_accu:", round(mean_values['best_valid_epoch_accu'], 2))
+    print("best_valid_epoch_AUC :", round(mean_values['best_valid_epoch_AUC'], 2))
+    print("last_train_loss      :", round(mean_values['last_train_loss'], 2))
+    print("last_train_accu      :", round(mean_values['last_train_accu'], 2))
+    print("last_train_AUC       :", round(mean_values['last_train_AUC'], 2))
+    print("last_valid_loss      :", round(mean_values['last_valid_loss'], 2))
+    print("last_valid_accu      :", round(mean_values['last_valid_accu'], 2))
+    print("last_valid_AUC       :", round(mean_values['last_valid_AUC'], 2))
 
     return df_cross_training
 

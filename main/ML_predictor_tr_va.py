@@ -8,9 +8,10 @@ Created on Fri Mar  1 23:33:28 2024
 import os
 import time
 import pandas as pd
+import warnings
+warnings.filterwarnings("ignore")
 
-from modules.mod_init import *
-from paths.paths import path_file_csv,path_base,folder_tra_val_results,folder_mean_results, path_keras
+from paths.paths import path_file_csv,path_base,folder_tra_val_results, path_keras
 from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history,create_results_df, print_results,time_intervals,cross_training
 from modules.mod_data_build import mod_data_build
 from modules.mod_preprocess import mod_preprocess
@@ -41,7 +42,7 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 #------------------------------------------------------------------------------
 n_features     = 1 
 
-n_years_train  = 9
+n_years_train  = 19
 m_years_valid  = 1
 time_interval  = time_intervals(df_preprocess, n_years_train, m_years_valid)
 #VARIABLES
@@ -58,7 +59,7 @@ epochs_ra  = 20
 patien_ra  = 100
 
 for dropout in dropout_ra:
-    print(f"Training with dropout={dropout}")
+    print(f"Training with dropout= {dropout}")
     
     cross_train_results = []
     for interval in time_interval:
