@@ -44,8 +44,8 @@ tf_serving_path = os.path.join(path_base, folder_tf_serving)
 
 results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
 
-file_model_name = f'version01.keras'
-path_keras = (results_path / file_model_name).as_posix()
+#file_model_name = f'version01.keras'
+#path_keras = (results_path / file_model_name).as_posix()
 
 
 

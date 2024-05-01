@@ -101,7 +101,7 @@ def class_weight(df_preprocessing):
   #  return {0: w0, 1:w1}
   
     
-def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1_ra, batchs_ra, le_rate_ra, optimizers, patien_ra, history):
+def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1, n_neur3,batchsz, le_rate,l2_regu, optimizers, patient, history):
 
     ev_results = pd.DataFrame(history.history)
     ev_results.index += 1
@@ -137,11 +137,13 @@ def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_vali
         'Start_train': start_train[0],
         'Start_valid': start_valid[0],
         'Dropout': dropout,
-        'Neurons': n_neur1_ra,
-        'Batch Size': batchs_ra,
-        'Learning Rate': le_rate_ra,
+        'Neur_1': n_neur1,
+        'Neur_3': n_neur3,
+        'Batch Size': batchsz,
+        'Learning Rate': le_rate,
+        'L2 Regurlar':l2_regu,
         'Optimizer': optimizers,
-        'Patience': patien_ra,
+        'Patience': patient,
         'best_train_loss': best_train_loss,
         'best_train_accu': best_train_accu,
         'best_train_AUC': best_train_AUCr,
@@ -168,72 +170,92 @@ def print_results(ev_results):
    print("best_valid_epoch_AUC :", round(ev_results['best_valid_epoch_AUC'], 2))
    print("best_valid_accu      :", round(ev_results['best_valid_accu'], 2))
    print("best_valid_AUC       :", round(ev_results['best_valid_AUC'], 2))
-
+   print('\n')
     
-def create_results_df(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neurons_1, batch_s, le_rate, optimizers, patiences, ev_results):
-    df_tra_val_results = pd.DataFrame({
-        'Lags': [lags],
-        'n_years_train': [n_years_train],
-        'm_years_train': [m_years_valid],
-        'Start_train': [start_train],
-        'Start_valid': [start_valid],
-        'Dropout': [dropout],
-        'Neurons': [n_neurons_1],
-        'Batch Size': [batch_s],
-        'Learning Rate': [le_rate],
-        'Optimizer': [optimizers],
-        'Patience': [patiences],
-        'Last train_Loss': [ev_results['last_train_loss']],
-        'Last valid_Loss': [ev_results['last_valid_loss']],
-        'Last train_accuracy': [ev_results['last_train_accu']],
-        'Last valid_accuracy': [ev_results['last_valid_accu']],
-        'Best train_accuracy': [ev_results['best_train_accu']],
-        'Best valid_accuracy': [ev_results['best_valid_accu']],
-        'Best train_epoch': [ev_results['best_train_epoch_accu']],
-        'Best valid_epoch': [ev_results['best_valid_epoch_accu']],
-        'Best train_AUC': [ev_results['best_train_AUC']],
-        'Best valid_AUC': [ev_results['best_valid_AUC']]
-    })
-    return df_tra_val_results
 
-def cross_training(cross_training_results):
-
-    df_cross_training = pd.DataFrame(cross_training_results)
+def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neur3, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
     
-    columns_mean = [
-        'best_train_loss', 'best_train_accu', 'best_train_AUC',
-        'best_train_epoch_loss', 'best_train_epoch_accu', 'best_train_epoch_AUC',
-        'best_valid_loss', 'best_valid_accu', 'best_valid_AUC',
-        'best_valid_epoch_loss', 'best_valid_epoch_accu', 'best_valid_epoch_AUC',
-        'last_train_loss', 'last_train_accu', 'last_train_AUC',
-        'last_valid_loss', 'last_valid_accu', 'last_valid_AUC'
-    ]
-
-    mean_values = df_cross_training[columns_mean].mean()
-
-    df_cross_training = pd.concat([df_cross_training, mean_values.to_frame().T], ignore_index=True)
+    columns_mean = ['best_train_loss',       'best_train_accu',       'best_train_AUC',  'best_train_epoch_loss', 'best_train_epoch_accu',
+                    'best_train_epoch_AUC',  'best_valid_loss',       'best_valid_accu', 'best_valid_AUC',        'best_valid_epoch_loss',
+                    'best_valid_epoch_accu', 'best_valid_epoch_AUC', 'last_train_loss',  'last_train_accu',       'last_train_AUC',
+                    'last_valid_loss',       'last_valid_accu',      'last_valid_AUC']
     
-    print("\nMean results:")
-    print("best_train_loss      :", round(mean_values['best_train_loss'], 2))
-    print("best_train_accu      :", round(mean_values['best_train_accu'], 2))
-    print("best_train_AUC       :", round(mean_values['best_train_AUC'], 2))
-    print("best_train_epoch_loss:", round(mean_values['best_train_epoch_loss'], 2))
-    print("best_train_epoch_accu:", round(mean_values['best_train_epoch_accu'], 2))
-    print("best_train_epoch_AUC :", round(mean_values['best_train_epoch_AUC'], 2))
-    print("best_valid_loss      :", round(mean_values['best_valid_loss'], 2))
-    print("best_valid_accu      :", round(mean_values['best_valid_accu'], 2))
-    print("best_valid_AUC       :", round(mean_values['best_valid_AUC'], 2))
-    print("best_valid_epoch_loss:", round(mean_values['best_valid_epoch_loss'], 2))
-    print("best_valid_epoch_accu:", round(mean_values['best_valid_epoch_accu'], 2))
-    print("best_valid_epoch_AUC :", round(mean_values['best_valid_epoch_AUC'], 2))
-    print("last_train_loss      :", round(mean_values['last_train_loss'], 2))
-    print("last_train_accu      :", round(mean_values['last_train_accu'], 2))
-    print("last_train_AUC       :", round(mean_values['last_train_AUC'], 2))
-    print("last_valid_loss      :", round(mean_values['last_valid_loss'], 2))
-    print("last_valid_accu      :", round(mean_values['last_valid_accu'], 2))
-    print("last_valid_AUC       :", round(mean_values['last_valid_AUC'], 2))
+    df_means_training = pd.DataFrame(means_training_results)
+    mean_values       = df_means_training[columns_mean].mean()  
+    
+    mean_best_train_loss       = mean_values['best_train_loss']
+    mean_best_train_accu       = mean_values['best_train_accu']
+    mean_best_train_AUC        = mean_values['best_train_AUC']
+    mean_best_train_epoch_loss = mean_values['best_train_epoch_loss']
+    mean_best_train_epoch_accu = mean_values['best_train_epoch_accu']
+    mean_best_train_epoch_AUC  = mean_values['best_train_epoch_AUC']
+    mean_best_valid_loss       = mean_values['best_valid_loss']
+    mean_best_valid_accu       = mean_values['best_valid_accu']
+    mean_best_valid_AUC        = mean_values['best_valid_AUC']
+    mean_best_valid_epoch_loss = mean_values['best_valid_epoch_loss']
+    mean_best_valid_epoch_accu = mean_values['best_valid_epoch_accu']
+    mean_best_valid_epoch_AUC  = mean_values['best_valid_epoch_AUC']
+    mean_last_train_loss       = mean_values['last_train_loss']
+    mean_last_train_accu       = mean_values['last_train_accu']
+    mean_last_train_AUC        = mean_values['last_train_AUC']
+    mean_last_valid_loss       = mean_values['last_valid_loss']
+    mean_last_valid_accu       = mean_values['last_valid_accu']
+    mean_last_valid_AUC        = mean_values['last_valid_AUC']
+    
+    return {
+        'Lags': lags,
+        'n_years_train': n_years_train,
+        'm_years_train': m_years_valid,
+        'Start_train': start_train[0],
+        'Start_valid': start_valid[0],
+        'Dropout': dropout,
+        'Neuro_1': n_neur1,
+        'Neuro_3': n_neur3,
+        'Batch Size': batchsz,
+        'Learning Rate': le_rate,
+        'L2 Regurlar':l2_regu,
+        'Optimizer': optimizers,
+        'Patience': patient,
+        'mean_best_train_loss': mean_best_train_loss,
+        'mean_best_train_accu': mean_best_train_accu,
+        'mean_best_train_AUC': mean_best_train_AUC,
+        'mean_best_train_epoch_loss': mean_best_train_epoch_loss,
+        'mean_best_train_epoch_accu': mean_best_train_epoch_accu,
+        'mean_best_train_epoch_AUC': mean_best_train_epoch_AUC,
+        'mean_best_valid_loss': mean_best_valid_loss,
+        'mean_best_valid_accu': mean_best_valid_accu,
+        'mean_best_valid_AUC': mean_best_valid_AUC,
+        'mean_best_valid_epoch_loss': mean_best_valid_epoch_loss,
+        'mean_best_valid_epoch_accu': mean_best_valid_epoch_accu,
+        'mean_best_valid_epoch_AUC': mean_best_valid_epoch_AUC,
+        'mean_last_train_loss': mean_last_train_loss,
+        'mean_last_train_accu': mean_last_train_accu,
+        'mean_last_train_AUC': mean_last_train_AUC,
+        'mean_last_valid_loss': mean_last_valid_loss,
+        'mean_last_valid_accu': mean_last_valid_accu,
+        'mean_last_valid_AUC': mean_last_valid_AUC
+    }
 
-    return df_cross_training
+def tests_results(lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,n_neur3, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
+    
+
+    return {
+        'Lags': lags,
+        'n_years_train': n_years_train,
+        'm_years_train': m_years_valid,
+        'Start_tests': start_tests[0],
+        'endin_tests': endin_tests[0],
+        'Dropout': dropout,
+        'Neuro_1': n_neur1,
+        'Neuro_3': n_neur3,
+        'Batch Size': batchsz,
+        'Learning Rate': le_rate,
+        'L2 Regurlar':l2_regu,
+        'Optimizer': optimizers,
+        'Patience': patient,
+        'tests_accuracy': tests_accuracy,
+ 
+    }
 
 def plots_loss(history):
     plt.figure(figsize=(12, 6))
@@ -309,12 +331,14 @@ def plots_histograms(dataframe, columns_of_interest):
     plt.show()
     
     
-def time_intervals(df_preprocess, n_years_train, m_years_valid):
+def time_intervals(df_preprocess, n_years_train, m_years_valid, endin_trains):
+    
+    endin_trains = pd.to_datetime(endin_trains[0]) 
 
     start_date = df_preprocess['date'].min()
-    endin_date = df_preprocess['date'].max()
+    endin_date = endin_trains
 
-    time_intervals = []
+    train_intervals = []
     while start_date < endin_date:
         
         endin_train = start_date.replace(year=start_date.year + n_years_train)
@@ -328,8 +352,8 @@ def time_intervals(df_preprocess, n_years_train, m_years_valid):
         start_valid_str = start_valid.strftime('%Y-%m-%d')
         endin_valid_str = endin_valid.strftime('%Y-%m-%d')
 
-        time_intervals.append((start_date_str, endin_train_str, start_valid_str, endin_valid_str))
+        train_intervals.append((start_date_str, endin_train_str, start_valid_str, endin_valid_str))
 
         start_date = endin_valid
 
-    return time_intervals
+    return train_intervals

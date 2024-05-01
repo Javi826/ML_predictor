@@ -10,12 +10,17 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, lags, n_features, data_type):
+def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, n_features, data_type):
+    
+
       
     start_train_i = start_train[0]
     endin_train_i = endin_train[0]
     start_valid_i = start_valid[0]
     endin_valid_i = endin_valid[0]
+    start_tests_i = start_tests[0]
+    endin_tests_i = endin_tests[0]
+
     
     df_date_lag_dir = df_preprocess.copy()
           
@@ -24,6 +29,7 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     
     train_data = df_date_lag_dir[(df_date_lag_dir['date'] >= start_train_i) & (df_date_lag_dir['date'] <  endin_train_i)]
     valid_data = df_date_lag_dir[(df_date_lag_dir['date']  > start_valid_i) & (df_date_lag_dir['date'] <= endin_valid_i)]
+    tests_data = df_date_lag_dir[(df_date_lag_dir['date']  > start_tests_i) & (df_date_lag_dir['date'] <= endin_tests_i)]
     
     dlags_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('lag')]
     month_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('month')]
@@ -123,6 +129,13 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
         
     elif data_type == 'y_tests':
     
-        y_tests = valid_data['direction']
+        y_tests      = tests_data['direction']
         
         return y_tests
+    
+    
+    elif data_type == 'y_tests_date':
+    
+        y_tests_date = tests_data['date']
+        
+        return y_tests_date
