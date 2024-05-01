@@ -44,21 +44,21 @@ df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,la
 #CROSS-VALIDATION X_train - y_train | X_valid - y_valid 
 #------------------------------------------------------------------------------
 n_features    = 1 
-n_years_train = 19
+n_years_train = 22
 m_years_valid = 1
-endin_trains  = ['2019-12-31']
+endin_trains  = ['2022-12-31']
 start_tests   = ['2023-01-01']
 endin_tests   = ['2023-12-31']
 train_interval = time_intervals(df_preprocess, n_years_train, m_years_valid, endin_trains)
 
 #VARIABLES
 #------------------------------------------------------------------------------
-#dropout_ra = [0.1,0.2,0.8,0.9]
-#n_neur1_ra = [10,20,30,40]
-#batchsz_ra = [8,16,32]
-#le_rate_ra = [0.001,0.0001]
-#l2_regu_ra = [0.0001,0.00001]
-#n_neur3_ra = [5,10,20]
+dropout_ra = [0.1,0.2,0.8,0.9]
+n_neur1_ra = [10,20,30,40]
+batchsz_ra = [8,16,32]
+le_rate_ra = [0.001,0.0001]
+l2_regu_ra = [0.0001,0.00001]
+n_neur3_ra = [5,10,20]
 
 dropout_ra = [0.9]
 n_neur1_ra = [20]
@@ -98,7 +98,7 @@ for dropout in dropout_ra:
                             X_train, X_valid, y_train, y_valid  = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, n_features, 'TRVAL')
                             X_tests, y_tests                    = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, n_features, 'TESTS')
                             y_tests_date                        = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, n_features, 'DATES')
-                            
+
                             #BUILD MODEL
                             #------------------------------------------------------------------------------
                             model = build_model(dropout, n_neur1, n_neur2_ra, n_neur3, le_rate, l2_regu, optimizers, lags, n_features)

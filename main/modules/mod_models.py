@@ -5,7 +5,7 @@ Created on Mon Apr 15 21:35:06 2024
 @author: javi
 """
 
-from keras.layers import Input, LSTM, Embedding, Reshape, concatenate, BatchNormalization, Dense
+from keras.layers import Input, LSTM, concatenate, BatchNormalization, Dense
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.regularizers import l2
@@ -19,18 +19,14 @@ def build_model(dropouts, n_neur1, n_neur2, n_neur3, le_rate, l2_regu, optimizer
     #INPUT LAYERS
     input_lags   = Input(shape=(lags, n_features), name='input_Lags')
     input_months = Input(shape=(12,), name='input_Months')
-    input_days   = Input(shape=(1,), name='input_Days')
+    #input_days   = Input(shape=(1,), name='input_Days')
 
     #LSTM LAYERS
     lstm_layer1 = LSTM(units=n_neur1, dropout=dropouts, name='LSTM1', return_sequences=True)(input_lags)
     lstm_layer2 = LSTM(units=n_neur2, dropout=dropouts, name='LSTM2')(lstm_layer1)
 
-    #EMBEDDINGS LAYER
-    dweek_embedding = Embedding(input_dim=5, output_dim=5)(input_days)
-    dweek_embedding = Reshape(target_shape=(5,))(dweek_embedding)
-
     #CONCATENATE MODEL + BATCHNORMALIZATION
-    merge_concatenat = concatenate([lstm_layer2, input_months, dweek_embedding])
+    merge_concatenat = concatenate([lstm_layer2, input_months])
     batch_normalized = BatchNormalization()(merge_concatenat)
 
     #DENSE LAYER
@@ -38,7 +34,7 @@ def build_model(dropouts, n_neur1, n_neur2, n_neur3, le_rate, l2_regu, optimizer
     output_layer = Dense(1,  activation='sigmoid', name='output')(denses_layer)
 
     #MODEL DEFINITION + OPTIMIZER + COMPILE
-    model       = Model(inputs=[input_lags, input_months, input_days], outputs=output_layer)
+    model       = Model(inputs=[input_lags, input_months], outputs=output_layer)
     optimizers  = Adam(learning_rate=le_rate)
     model.compile(optimizer=optimizers, loss='binary_crossentropy', metrics=['accuracy', 'AUC'])
     
@@ -63,3 +59,8 @@ def train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchs_ra, e
                         callbacks=[check_pointers, early_stopping])
     
     return history
+
+
+    #EMBEDDINGS LAYER
+    #dweek_embedding = Embedding(input_dim=5, output_dim=5)(input_days)
+    #dweek_embedding = Reshape(target_shape=(5,))(dweek_embedding)
