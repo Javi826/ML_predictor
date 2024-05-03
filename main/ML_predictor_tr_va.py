@@ -61,12 +61,12 @@ train_interval = time_intervals(df_preprocess, n_years_train, m_years_valid, end
 
 #VARIABLES
 #------------------------------------------------------------------------------
-#dropout_ra = [0.1, 0.2, 0.9]
-#n_neur1_ra = [30,40,50,60]
-#le_rate_ra = [0.0001, 0.00001]
-#batchsz_ra = [8,16,32]
-#l2_regu_ra = [0.0001,0.00001]
-#n_neurd_ra = [5,10]
+dropout_ra = [0.1, 0.9]
+n_neur1_ra = [40]
+le_rate_ra = [0.01, 0.0001]
+batchsz_ra = [16,32]
+l2_regu_ra = [0.01, 0.0001]
+n_neurd_ra = [5,10]
 
 
 dropout_ra = [0.1]
@@ -120,8 +120,8 @@ for dropout in dropout_ra:
                             
                             #PLOTS MODEL
                             #------------------------------------------------------------------------------
-                            plots_loss(history)
-                            plots_accu(history)
+                            #plots_loss(history)
+                            #plots_accu(history)
                             #plots_aucr(history)
                             
                             #MODEL PREDICTIONS
