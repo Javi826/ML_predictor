@@ -4,15 +4,15 @@
 Created on Mon Apr 15 21:35:06 2024
 @author: javi
 """
-from functions.def_functions import class_weights
+from main.functions.def_functions import class_weights,set_seeds
+from main.paths.paths import results_path
 from keras.layers import Input, LSTM, concatenate, BatchNormalization, Dense
 from keras.models import Model
-from keras.optimizers import Adam, RMSprop
+from keras.optimizers import Adam
+#from keras.optimizers import RMSprop
 from keras.regularizers import l2
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-from functions.def_functions import set_seeds
-from paths.paths import results_path
-import pandas as pd
+
 
 
 def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizers, lags, fets, n_features):

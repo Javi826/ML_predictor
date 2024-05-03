@@ -7,8 +7,8 @@ Created on Mon Nov  8 22:54:48 2023
 
 import os
 import numpy as np
-from paths.paths import path_base,folder_preprocess
-from functions.def_functions import filter_data_by_date_range, df_plots, diff_series
+from main.paths.paths import path_base,folder_preprocess
+from main.functions.def_functions import filter_data_by_date_range, df_plots, diff_series
 
 def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags):
     

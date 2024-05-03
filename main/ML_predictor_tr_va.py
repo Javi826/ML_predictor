@@ -12,12 +12,12 @@ import warnings
 #import numpy as np
 #warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
 
-from paths.paths import path_file_csv,path_base,folder_tra_val_results,folder_tests_results
-from functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history, print_results,time_intervals,cross_training,tests_results
-from modules.mod_data_build import mod_data_build
-from modules.mod_preprocess import mod_preprocess
-from modules.mod_models import build_model, train_model
-from modules.mod_proces_data import mod_process_data
+from main.paths.paths import path_file_csv,path_base,folder_tra_val_results,folder_tests_results
+from main.functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history, print_results,time_intervals,cross_training,tests_results
+from main.modules.mod_data_build import mod_data_build
+from main.modules.mod_preprocess import mod_preprocess
+from main.modules.mod_models import build_model, train_model
+from main.modules.mod_proces_data import mod_process_data
 
 #from sklearn.utils.class_weight import compute_class_weight
 
