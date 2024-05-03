@@ -5,8 +5,8 @@ Created on Mon Nov  8 22:54:48 2023
 @author: javier
 """
 import os
-from functions.def_functions import add_index_column,date_anio,day_week,sort_columns,rounding_data,one_hot_months
-from paths.paths import path_base,folder_df_build
+from main.functions.def_functions import add_index_column,date_anio,day_week,sort_columns,rounding_data,one_hot_months
+from main.paths.paths import path_base,folder_df_build
 
 def mod_data_build(df_data,start_date,endin_date):
 

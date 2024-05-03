@@ -4,7 +4,7 @@
 Created on Tue Apr 16 19:24:05 2024
 @author: javi
 """
-from modules.mod_pipeline import mod_pipeline
+from main.modules.mod_pipeline import mod_pipeline
 
 
 
