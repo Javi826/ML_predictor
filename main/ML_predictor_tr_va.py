@@ -4,14 +4,18 @@
 Created on Fri Mar  1 23:33:28 2024
 @author: javi
 """
-
+import sys
+import os
 #GOOGLE COLAB
 #------------------------------------------------------------------------------
-import sys
-ruta_directorio_clonado = '/content/ML_predictor'
-sys.path.append(ruta_directorio_clonado)
+#ruta_directorio_clonado = '/content/ML_predictor'
+#sys.path.append(ruta_directorio_clonado)
 
-import os
+#GOOGLE JUPYTER
+#------------------------------------------------------------------------------
+nuevo_directorio = "/home/jupyter/ML_predictor"
+os.chdir(nuevo_directorio)
+
 import time
 import pandas as pd
 import warnings
@@ -69,12 +73,12 @@ l2_regu_ra = [0.01, 0.0001]
 n_neurd_ra = [5,10]
 
 
-dropout_ra = [0.1]
-n_neur1_ra = [40]
-batchsz_ra = [32]
-le_rate_ra = [0.0001]
-l2_regu_ra = [0.0001]
-n_neurd_ra = [5]
+#dropout_ra = [0.1]
+#n_neur1_ra = [40]
+#batchsz_ra = [32]
+#le_rate_ra = [0.0001]
+#l2_regu_ra = [0.0001]
+#n_neurd_ra = [5]
 
 optimizers = 'Adam'
 epochss    = 50
