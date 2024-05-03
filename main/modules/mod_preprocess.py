@@ -28,8 +28,16 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags):
         df_preprocess[col] = df_preprocess['returns_diff'].shift(lag)
         cols.append(col) 
         
-    df_preprocess['momentun']   = df_preprocess['returns'].rolling(5).mean().shift(1)
-    df_preprocess['volatility'] = df_preprocess['returns'].rolling(20).std().shift(1)       
+    df_preprocess['fet_momentun']   = df_preprocess['returns'].rolling(20).mean()
+    df_preprocess['fet_volatility'] = df_preprocess['returns'].rolling(20).std() 
+
+    fet_cols = [col for col in df_preprocess.columns if col.startswith('fet_')]
+    for col in fet_cols:
+        for lag in range(1, lags+1):
+            new_col = f'lasg_{str(lag).zfill(2)}_{col}'
+            df_preprocess[new_col] = df_preprocess[col].shift(lag)
+            cols.append(new_col)
+     
     df_preprocess.dropna(inplace=True)
     
     #df_preprocessing['date'] = pd.to_datetime(df_preprocessing['date'])

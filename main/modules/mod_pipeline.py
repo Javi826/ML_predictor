@@ -6,21 +6,18 @@ Created on Mon Nov  8 22:54:48 2023
 """
 
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 
 
-def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, n_features, data_type):
-    
-
-      
+def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, fets, n_features, data_type):
+          
     start_train_i = start_train[0]
     endin_train_i = endin_train[0]
     start_valid_i = start_valid[0]
     endin_valid_i = endin_valid[0]
     start_tests_i = start_tests[0]
     endin_tests_i = endin_tests[0]
-
     
     df_date_lag_dir = df_preprocess.copy()
           
@@ -33,24 +30,26 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     
     dlags_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('lag')]
     month_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('month')]
-       
+   
+    array_dim = lags * fets  
     #X_TRAIN_techi + dweek
     #------------------------------------------------------------------------------
     
     if data_type == 'X_train_techi':
     
-        X_data        = train_data[dlags_columns_selected]
+        X_train_techi = train_data[dlags_columns_selected]
         scaler        = StandardScaler()
-        X_scaled      = scaler.fit_transform(X_data)
-        X_scaled      = pd.DataFrame(X_scaled, columns=dlags_columns_selected)
-        X_reshaped    = X_scaled.values.reshape(-1, lags, n_features)
-        X_train_techi = X_reshaped
+        #scaler        = MinMaxScaler()
+        X_train_techi = scaler.fit_transform(X_train_techi)
+        X_train_techi = pd.DataFrame(X_train_techi)
+        X_train_techi = X_train_techi.values.reshape(-1,array_dim, n_features)
         
         return X_train_techi
     
     elif data_type == 'X_train_month':
     
         X_train_month  = train_data[month_columns_selected]
+        X_train_month  = X_train_month.values
     
         return X_train_month
     
@@ -65,18 +64,19 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     
     elif data_type == 'X_valid_techi':
     
-        X_data        = valid_data[dlags_columns_selected]
+        X_valid_techi = valid_data[dlags_columns_selected]
         scaler        = StandardScaler()
-        X_scaled      = scaler.fit_transform(X_data)
-        X_scaled      = pd.DataFrame(X_scaled, columns=dlags_columns_selected)
-        X_reshaped    = X_scaled.values.reshape(-1, lags, n_features)
-        X_valid_techi = X_reshaped          
+        #scaler        = MinMaxScaler()
+        X_valid_techi = scaler.fit_transform(X_valid_techi)
+        X_valid_techi = pd.DataFrame(X_valid_techi)
+        X_valid_techi = X_valid_techi.values.reshape(-1, array_dim, n_features)       
         
         return X_valid_techi
     
     elif data_type == 'X_valid_month':
     
-        X_valid_month  = valid_data[month_columns_selected]
+        X_valid_month = valid_data[month_columns_selected]
+        X_valid_month = X_valid_month.values
         
         return X_valid_month
     
@@ -91,18 +91,19 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     #------------------------------------------------------------------------------        
     elif data_type == 'X_tests_techi':
     
-        X_data        = tests_data[dlags_columns_selected]
+        X_tests_techi = tests_data[dlags_columns_selected]
         scaler        = StandardScaler()
-        X_scaled      = scaler.fit_transform(X_data)
-        X_scaled      = pd.DataFrame(X_scaled, columns=dlags_columns_selected)
-        X_reshaped    = X_scaled.values.reshape(-1, lags, n_features)
-        X_tests_techi = X_reshaped
+        #scaler        = MinMaxScaler()
+        X_tests_techi = scaler.fit_transform(X_tests_techi)
+        X_tests_techi = pd.DataFrame(X_tests_techi)
+        X_tests_techi = X_tests_techi.values.reshape(-1, array_dim, n_features)
         
         return X_tests_techi
     
     elif data_type == 'X_tests_month':
     
-        X_tests_month  = tests_data[month_columns_selected]
+        X_tests_month = tests_data[month_columns_selected]
+        X_tests_month = X_tests_month.values
         
         return X_tests_month
     
@@ -118,18 +119,22 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     elif data_type == 'y_train':
         
         y_train = train_data['direction']
-        
+        y_train.to_excel('y_train.xlsx', index=False)
+        y_train = y_train.values
+               
         return y_train
     
     elif data_type == 'y_valid':
     
         y_valid = valid_data['direction']
+        y_valid = y_valid.values
         
         return y_valid
         
     elif data_type == 'y_tests':
     
-        y_tests      = tests_data['direction']
+        y_tests = tests_data['direction']
+        y_tests = y_tests.values
         
         return y_tests
     

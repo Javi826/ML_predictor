@@ -81,27 +81,15 @@ def set_seeds(seed=42):
     np.random.seed(seed)
     tf.random.set_seed(seed)
     
-def class_weight(df_preprocessing):
-    c0, c1 = np.bincount(df_preprocessing['direction'])
-    print(f"Clase 0: {c0} muestras, Clase 1: {c1} muestras")
+def class_weights(y_train):
     
-    w0 = (1/c0) * (len(df_preprocessing)) / 2
-    w1 = (1/c1) * (len(df_preprocessing)) / 2
-    
-    print(f"Peso de clase 0: {w0}, Peso de clase 1: {w1}")
-    
+    c0, c1 = np.bincount(y_train)   
+    w0 = (1/c0) * (len(y_train)) / 2
+    w1 = (1/c1) * (len(y_train)) / 2
+        
     return {0: w0, 1: w1}
-
-
-#def class_weight(df_preprocessing):
- #   
-  #  c0, c1 = np.bincount(df_preprocessing['direction'])
-#    w0 = (1/c0) * (len(df_preprocessing)) / 2
- #   w1 = (1/c1) * (len(df_preprocessing)) / 2
-  #  return {0: w0, 1:w1}
-  
-    
-def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1, n_neur3,batchsz, le_rate,l2_regu, optimizers, patient, history):
+      
+def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1, n_neurd,batchsz, le_rate,l2_regu, optimizers, patient, history):
 
     ev_results = pd.DataFrame(history.history)
     ev_results.index += 1
@@ -138,7 +126,7 @@ def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_vali
         'Start_valid': start_valid[0],
         'Dropout': dropout,
         'Neur_1': n_neur1,
-        'Neur_3': n_neur3,
+        'Neur_d': n_neurd,
         'Batch Size': batchsz,
         'Learning Rate': le_rate,
         'L2 Regurlar':l2_regu,
@@ -166,14 +154,15 @@ def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_vali
 
 def print_results(ev_results):
     
-   print("best_valid_epoch_accu:", round(ev_results['best_valid_epoch_accu'], 2))
-   print("best_valid_epoch_AUC :", round(ev_results['best_valid_epoch_AUC'], 2))
+   #print("best_valid_epoch_accu:", round(ev_results['best_valid_epoch_accu'], 2))
+   #print("best_valid_epoch_AUC :", round(ev_results['best_valid_epoch_AUC'], 2))
+   print("best_train_accu      :", round(ev_results['best_train_accu'], 2))
    print("best_valid_accu      :", round(ev_results['best_valid_accu'], 2))
    print("best_valid_AUC       :", round(ev_results['best_valid_AUC'], 2))
    print('\n')
     
 
-def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neur3, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
+def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
     
     columns_mean = ['best_train_loss',       'best_train_accu',       'best_train_AUC',  'best_train_epoch_loss', 'best_train_epoch_accu',
                     'best_train_epoch_AUC',  'best_valid_loss',       'best_valid_accu', 'best_valid_AUC',        'best_valid_epoch_loss',
@@ -210,7 +199,7 @@ def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid,
         'Start_valid': start_valid[0],
         'Dropout': dropout,
         'Neuro_1': n_neur1,
-        'Neuro_3': n_neur3,
+        'Neuro_d': n_neurd,
         'Batch Size': batchsz,
         'Learning Rate': le_rate,
         'L2 Regurlar':l2_regu,
@@ -236,7 +225,7 @@ def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid,
         'mean_last_valid_AUC': mean_last_valid_AUC
     }
 
-def tests_results(lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,n_neur3, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
+def tests_results(lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
     
 
     return {
@@ -247,7 +236,7 @@ def tests_results(lags, n_years_train, m_years_valid, start_tests, endin_tests, 
         'endin_tests': endin_tests[0],
         'Dropout': dropout,
         'Neuro_1': n_neur1,
-        'Neuro_3': n_neur3,
+        'Neuro_d': n_neurd,
         'Batch Size': batchsz,
         'Learning Rate': le_rate,
         'L2 Regurlar':l2_regu,
@@ -256,6 +245,7 @@ def tests_results(lags, n_years_train, m_years_valid, start_tests, endin_tests, 
         'tests_accuracy': tests_accuracy,
  
     }
+
 
 def plots_loss(history):
     plt.figure(figsize=(12, 6))
