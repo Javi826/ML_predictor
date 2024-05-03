@@ -19,7 +19,7 @@ def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizer
     
     
     array_dim = lags * fets
-    print(n_features)
+    print('entrabuild')
     
     #INPUT LAYERS
     #------------------------------------------------------------------------------
@@ -51,10 +51,12 @@ def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizer
     model.compile(optimizer=optimizers, loss='binary_crossentropy', metrics=['accuracy', 'AUC'])
     #model.summary()
     
-    
+    print('salebuild')
     return model
 
 def train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epochss, patient):
+    
+    print('entratrain')
 
     file_model_name = f"dropout_{dropout}.keras"   
     path_keras      = (results_path / file_model_name).as_posix()
@@ -73,5 +75,6 @@ def train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epo
                         validation_data=(X_valid, y_valid),
                         #class_weight=class_weightss,
                         callbacks=[check_pointers, early_stopping])
+    print('saletrain')
     
     return history

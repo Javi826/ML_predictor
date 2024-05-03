@@ -8,8 +8,8 @@ Created on Sat Dec 30 21:06:19 2023
 import os
 from pathlib import Path
 
-#path_base = "/Users/javi/Desktop/ML/ML_predictor"
 path_base = "/content/ML_predictor"
+#path_base = "/Users/javi/Desktop/ML/ML_predictor"
 
 file_df_data           = "sp500_data.csv"
 folder_csv             = "inputs/historicyh"
@@ -42,8 +42,9 @@ path_tests_results     = os.path.join(path_base, folder_tests_results, file_test
 folder_tf_serving = "tf_serving"
 tf_serving_path = os.path.join(path_base, folder_tf_serving)
 
-#results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
 results_path = Path('/content/ML_predictor/keras')
+#results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
+
 
 #file_model_name = f'version01.keras'
 #path_keras = (results_path / file_model_name).as_posix()

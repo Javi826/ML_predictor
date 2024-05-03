@@ -5,12 +5,18 @@ Created on Fri Mar  1 23:33:28 2024
 @author: javi
 """
 
+#GOOGLE COLAB
+#------------------------------------------------------------------------------
+import sys
+ruta_directorio_clonado = '/content/ML_predictor'
+sys.path.append(ruta_directorio_clonado)
+
 import os
 import time
 import pandas as pd
 import warnings
-#import numpy as np
-#warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
+import numpy as np
+warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
 
 from main.paths.paths import path_file_csv,path_base,folder_tra_val_results,folder_tests_results
 from main.functions.def_functions import plots_loss, plots_accu,plots_aucr, evaluate_history, print_results,time_intervals,cross_training,tests_results
