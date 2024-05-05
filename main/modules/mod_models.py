@@ -15,14 +15,12 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 
 
-def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizers, lags, fets, n_features):
+def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features):
     
-    
-    array_dim = lags * fets
-    
+
     #INPUT LAYERS
     #------------------------------------------------------------------------------
-    input_lags   = Input(shape=(array_dim, n_features), name='input_Lags')
+    input_lags   = Input(shape=(dim_arrays, n_features), name='input_Lags')
     input_months = Input(shape=(12,), name='input_Months')
 
     #LSTM LAYERS
@@ -60,7 +58,7 @@ def train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epo
     
     set_seeds()
     
-    class_weightss  = class_weights(y_train)
+    #class_weightss  = class_weights(y_train)
     
     check_pointers = ModelCheckpoint(filepath=path_keras, verbose=0, monitor='val_accuracy',mode='max',save_best_only=True)
     early_stopping = EarlyStopping(monitor='val_accuracy', patience=patient, verbose=0, restore_best_weights=True)

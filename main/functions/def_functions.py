@@ -162,7 +162,7 @@ def print_results(ev_results):
    print('\n')
     
 
-def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
+def train_results(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
     
     columns_mean = ['best_train_loss',       'best_train_accu',       'best_train_AUC',  'best_train_epoch_loss', 'best_train_epoch_accu',
                     'best_train_epoch_AUC',  'best_valid_loss',       'best_valid_accu', 'best_valid_AUC',        'best_valid_epoch_loss',
@@ -225,10 +225,11 @@ def cross_training(lags, n_years_train, m_years_valid, start_train, start_valid,
         'mean_last_valid_AUC': mean_last_valid_AUC
     }
 
-def tests_results(lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
+def tests_results(rets,lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
     
 
     return {
+        'Rets': rets,
         'Lags': lags,
         'n_years_train': n_years_train,
         'm_years_train': m_years_valid,
@@ -321,12 +322,12 @@ def plots_histograms(dataframe, columns_of_interest):
     plt.show()
     
     
-def time_intervals(df_preprocess, n_years_train, m_years_valid, endin_trains):
+def time_intervals(df_preprocess, n_years_train, m_years_valid, endin_train):
     
-    endin_trains = pd.to_datetime(endin_trains[0]) 
+    endin_train = pd.to_datetime(endin_train[0]) 
 
     start_date = df_preprocess['date'].min()
-    endin_date = endin_trains
+    endin_date = endin_train
 
     train_intervals = []
     while start_date < endin_date:

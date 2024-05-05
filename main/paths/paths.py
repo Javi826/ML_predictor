@@ -9,11 +9,11 @@ import os
 from pathlib import Path
 
 #path_base = "/content/ML_predictor"
-path_base = "/home/jupyter/ML_predictor"
-#path_base = "/Users/javi/Desktop/ML/ML_predictor"
+#path_base = "/home/jupyter/ML_predictor"
+path_base = "/Users/javi/Desktop/ML/ML_predictor"
 
 file_df_data           = "sp500_data.csv"
-folder_csv             = "inputs/historicyh"
+folder_csv             = "inputs/ahistoricyh"
 path_file_csv          = os.path.join(path_base, folder_csv, file_df_data)
 
 file_df_build          = "df_build.csv"
@@ -44,8 +44,8 @@ folder_tf_serving = "tf_serving"
 tf_serving_path = os.path.join(path_base, folder_tf_serving)
 
 #results_path = Path('/content/ML_predictor/keras')
-results_path = Path('/home/jupyter/ML_predictor/keras')
-#results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
+#results_path = Path('/home/jupyter/ML_predictor/keras')
+results_path = Path('/Users/javi/Desktop/ML/ML_predictor/keras')
 
 
 #file_model_name = f'version01.keras'
