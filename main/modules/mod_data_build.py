@@ -27,4 +27,3 @@ def mod_data_build(df_data,start_date,endin_date):
     df_build.to_csv(excel_file_path, index=False)
     
     return df_build
-

@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -20,7 +21,8 @@ import os
 import time
 import warnings
 import pandas as pd
-import yfinance as yf
+import shap
+import numpy as np
 #import yfinance as yf
 warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
 
@@ -52,17 +54,17 @@ csv_path = os.path.join(path_base, folder_csv, index_file_name)
 
 #CALL BUILD
 #------------------------------------------------------------------------------
-build_start_date = "1980-01-01"
-build_endin_date = "2024-04-30"
-df_data          = pd.read_csv(csv_path, header=None, skiprows=1, names=['date','open','high','low','close','adj_close','volume'])
-df_build         = mod_data_build(df_data,build_start_date,build_endin_date)
+build_start_date  = "1980-01-01"
+build_endin_date  = "2024-04-30"
+df_data           = pd.read_csv(csv_path, header=None, skiprows=1, names=['date','open','high','low','close','adj_close','volume'])
+df_build          = mod_data_build(df_data,build_start_date,build_endin_date)
 
 
 #VARIABLES
 #------------------------------------------------------------------------------
 
-#rets_ra    = [10,30,35,40,50]  
-#lags_ra    = [10,15,20,30,40]
+#rets_ra    = [10,30]  
+#lags_ra    = [10,20]
 #n_neur1_ra = [40]
 #dropout_ra = [0.1]
 #batchsz_ra = [32]
@@ -70,16 +72,16 @@ df_build         = mod_data_build(df_data,build_start_date,build_endin_date)
 #l2_regu_ra = [0.0001]
 #n_neurd_ra = [5] 
 
-rets_ra    = [1] 
-lags_ra    = [20]  
-dropout_ra = [0.1] 
-n_neur1_ra = [40]
-batchsz_ra = [32]
-le_rate_ra = [0.0001]
-l2_regu_ra = [0.0001]
-n_neurd_ra = [5]
+rets_ra      = [1]
+lags_ra      = [20]  
+dropout_ra   = [0.1] 
+n_neur1_ra   = [40]
+batchsz_ra   = [32]
+le_rate_ra   = [0.0001]
+l2_regu_ra   = [0.0001]
+n_neurd_ra   = [5]
 
-e_features = 'No'
+e_features = 'Yes'
 
 loops_train_results = []
 loops_tests_results = []
@@ -89,21 +91,21 @@ for rets in rets_ra:
         
         dim_array1 = 1
         dim_arrays = dim_array1 * lags
-        n_features = 1
+        n_features = 3
         
         #CALL PREPROCESSING
-        #------------------------------------------------------------------------------
         prepro_start_date = "2000-01-01"
         prepro_endin_date = "2024-04-30"
+        #------------------------------------------------------------------------------
         df_preprocess = mod_preprocess(df_build, prepro_start_date, prepro_endin_date,lags,rets, e_features)
         
         #CROSS-VALIDATION X_train - y_train | X_valid - y_valid 
         #------------------------------------------------------------------------------
-        n_years_train = 19
-        m_years_valid = 1
         endin_train   = ['2019-12-31']
         start_tests   = ['2023-01-01']
         endin_tests   = ['2023-12-31']
+        n_years_train = 19
+        m_years_valid = 1
         train_interval = time_intervals(df_preprocess, n_years_train, m_years_valid, endin_train)
         
         optimizers = 'Adam'
@@ -136,6 +138,10 @@ for rets in rets_ra:
                                     #------------------------------------------------------------------------------
                                     model   = build_model(dropout, n_neur1, n_neur2_ra, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features)
                                     history = train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epochss, patient)
+                                    #max_length = max(len(x) for x in X_train)
+                                    #explainer   = shap.Explainer(model, X_train_np)
+                                    #X_train_np = np.array([x[:max_length] + [0]*(max_length-len(x)) for x in X_train])
+                                    #shap_values = explainer.shap_values(X_train_np)
                                     
                                     #EVALUATE MODEL
                                     #------------------------------------------------------------------------------
@@ -151,7 +157,7 @@ for rets in rets_ra:
                                     #------------------------------------------------------------------------------
                                     tests_accuracy = tests_predictions(model, X_tests, y_tests_date, y_tests) 
                                     print('Tests_accuracy:',tests_accuracy)
-                                    
+
                                     #SAVE TESTS RESULTS
                                     #------------------------------------------------------------------------------                           
                                     save_tests_results(rets, lags, n_years_train, m_years_valid, start_train, start_tests, endin_tests, dropout, n_neur1, n_neurd, batchsz, le_rate, l2_regu, optimizers, patient, tests_accuracy, loops_tests_results)

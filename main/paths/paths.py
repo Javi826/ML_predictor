@@ -20,13 +20,18 @@ file_df_build          = "df_build.csv"
 folder_df_build        = "inputs/data_build"
 path_df_build          = os.path.join(path_base, folder_df_build, file_df_build)
 
+file_preprocess        = 'df_preprocessing.xlsx'
+folder_preprocess      = "inputs/preprocess"
+path_preprocess        = os.path.join(path_base, folder_preprocess, file_preprocess)
+
+file_zinputs_model     = 'df_preprocessing.xlsx'
+folder_zinputs_model   = "inputs/zinputs_model"
+path_zinputs_model     = os.path.join(path_base, folder_zinputs_model, file_preprocess)
+
 file_summary_stats     = 'df_summary_stats'
 folder_summary_stats   = "outputs/summary_stats"
 path_summary_stats     = os.path.join(path_base, folder_summary_stats, file_summary_stats)
 
-file_preprocess        = 'df_preprocessing.xlsx'
-folder_preprocess      = "inputs/preprocess"
-path_preprocess        = os.path.join(path_base, folder_preprocess, file_preprocess)
 
 file_tra_val_results   = 'df_tra_val_results.xlsx'
 folder_tra_val_results = "results/tra_val_results"

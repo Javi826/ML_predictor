@@ -37,19 +37,19 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags, rets, e_f
     #----------------------------------------------------------------------------------------------    
     if e_features == 'Yes':
         
-        # Calcula las características adicionales
-        df_preprocess['fet_momentun']   = df_preprocess['returns'].rolling(10).mean()
-        df_preprocess['fet_volatility'] = df_preprocess['returns'].rolling(10).std()
-    
-        # Genera las columnas de retraso para las características adicionales
-        fet_cols = [col for col in df_preprocess.columns if col.startswith('fet_')]
-        lagged_features = []
-        for col in fet_cols:
-            lagged_feature_cols = pd.concat([df_preprocess[col].shift(lag).rename(f'lag_{str(lag).zfill(2)}_{col}') for lag in range(1, lags + 1)], axis=1)
-            lagged_features.append(lagged_feature_cols)
+       df_preprocess['fet_momentun']   = df_preprocess['returns'].rolling(20).mean()
+       df_preprocess['fet_volatility'] = df_preprocess['returns'].rolling(20).std() 
         
-        # Concatenar las características adicionales retrasadas al dataframe principal
-        df_preprocess = pd.concat([df_preprocess] + lagged_features, axis=1)
+       #Generar las columnas de retraso para las características adicionales
+       fet_cols = [col for col in df_preprocess.columns if col.startswith('fet_')]
+       lagged_features = []
+        
+       for col in fet_cols:
+           lagged_feature_cols = pd.concat([df_preprocess[col].shift(lag).rename(f'lag_fet_{str(lag).zfill(2)}_{col[4:]}') for lag in range(1, lags + 1)], axis=1)
+           lagged_features.append(lagged_feature_cols)
+        
+    # Concatenar las características adicionales retrasadas al dataframe principal
+       df_preprocess = pd.concat([df_preprocess] + lagged_features, axis=1)
                 
     #DROPNA
     #----------------------------------------------------------------------------------------------  
