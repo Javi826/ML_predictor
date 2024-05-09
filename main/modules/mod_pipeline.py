@@ -38,8 +38,8 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     train_data_selected = train_data[dlags_columns_selected]
     train_data_selected.to_excel(train_excel_path, index=False)
     
-    train_oneh_name = f"train_data_oneh{start_train_i}.xlsx"
-    train_excel_path = os.path.join(path_base, folder_zinputs_model, train_oneh_name)
+    train_oneh_name     = f"train_data_oneh{start_train_i}.xlsx"
+    train_excel_path    = os.path.join(path_base, folder_zinputs_model, train_oneh_name)
     train_data_selected = train_data[month_columns_selected]
     train_data_selected.to_excel(train_excel_path, index=False)
     
@@ -152,9 +152,3 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
         
         return y_tests
     
-    
-    elif data_type == 'y_tests_date':
-    
-        y_tests_date      = tests_data['date']
-        
-        return y_tests_date

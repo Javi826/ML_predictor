@@ -21,8 +21,6 @@ import os
 import time
 import warnings
 import pandas as pd
-import shap
-import numpy as np
 #import yfinance as yf
 warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
 
@@ -62,7 +60,9 @@ df_build          = mod_data_build(df_data,build_start_date,build_endin_date)
 
 #VARIABLES
 #------------------------------------------------------------------------------
-
+optimizers  = 'Adam'
+epochss     = 50
+patient     = 25
 #rets_ra    = [10,30]  
 #lags_ra    = [10,20]
 #n_neur1_ra = [40]
@@ -74,14 +74,14 @@ df_build          = mod_data_build(df_data,build_start_date,build_endin_date)
 
 rets_ra      = [1]
 lags_ra      = [20]  
-dropout_ra   = [0.1] 
+dropout_ra   = [0.1]
 n_neur1_ra   = [40]
 batchsz_ra   = [32]
 le_rate_ra   = [0.0001]
 l2_regu_ra   = [0.0001]
 n_neurd_ra   = [5]
 
-e_features = 'Yes'
+e_features = 'No'
 
 loops_train_results = []
 loops_tests_results = []
@@ -91,7 +91,7 @@ for rets in rets_ra:
         
         dim_array1 = 1
         dim_arrays = dim_array1 * lags
-        n_features = 3
+        n_features = 1
         
         #CALL PREPROCESSING
         prepro_start_date = "2000-01-01"
@@ -108,9 +108,6 @@ for rets in rets_ra:
         m_years_valid = 1
         train_interval = time_intervals(df_preprocess, n_years_train, m_years_valid, endin_train)
         
-        optimizers = 'Adam'
-        epochss    = 50
-        patient    = 25
         
         for dropout in dropout_ra:
             for n_neur1 in n_neur1_ra:
@@ -132,16 +129,12 @@ for rets in rets_ra:
                                       
                                     X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'TRVAL')
                                     X_tests, y_tests                   = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'TESTS')
-                                    y_tests_date                       = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'DATES')
                                     
                                     #BUILD & TRAIN MODEL
                                     #------------------------------------------------------------------------------
                                     model   = build_model(dropout, n_neur1, n_neur2_ra, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features)
                                     history = train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epochss, patient)
-                                    #max_length = max(len(x) for x in X_train)
-                                    #explainer   = shap.Explainer(model, X_train_np)
-                                    #X_train_np = np.array([x[:max_length] + [0]*(max_length-len(x)) for x in X_train])
-                                    #shap_values = explainer.shap_values(X_train_np)
+                                
                                     
                                     #EVALUATE MODEL
                                     #------------------------------------------------------------------------------
@@ -155,7 +148,7 @@ for rets in rets_ra:
                                     
                                     #MODEL PREDICTIONS
                                     #------------------------------------------------------------------------------
-                                    tests_accuracy = tests_predictions(model, X_tests, y_tests_date, y_tests) 
+                                    tests_accuracy = tests_predictions(model, df_preprocess, X_tests, y_tests, start_tests, endin_tests) 
                                     print('Tests_accuracy:',tests_accuracy)
 
                                     #SAVE TESTS RESULTS

@@ -12,6 +12,7 @@ from keras.optimizers import Adam
 #from keras.optimizers import RMSprop
 from keras.regularizers import l2
 from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.layers import Dropout
 
 
 
@@ -36,7 +37,10 @@ def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizer
 
     #DENSE LAYER
     #------------------------------------------------------------------------------
+    #dense_layer1 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(batch_normalized)
+    
     dense_layer1 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(batch_normalized)
+    #dense_layer1 = Dropout(dropouts)(dense_layer1)
     #dense_layer2 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(dense_layer1)
     #dense_layer3 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(dense_layer2)
     output_layer = Dense(1,  activation='sigmoid', name='output')(dense_layer1)

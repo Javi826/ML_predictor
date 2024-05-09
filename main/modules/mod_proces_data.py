@@ -42,9 +42,3 @@ def mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin
         y_tests = mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'y_tests')
         
         return X_tests, y_tests
-        
-    elif type_split == 'DATES':
-            
-        y_tests_date = mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'y_tests_date')
-    
-    return y_tests_date
