@@ -72,14 +72,15 @@ patient     = 25
 #l2_regu_ra = [0.0001]
 #n_neurd_ra = [5] 
 
-rets_ra      = [1]
-lags_ra      = [20]  
-dropout_ra   = [0.1]
-n_neur1_ra   = [40]
-batchsz_ra   = [32]
-le_rate_ra   = [0.0001]
-l2_regu_ra   = [0.0001]
-n_neurd_ra   = [5]
+rets_ra       = [1]
+lags_ra       = [20]  
+dropout_ra    = [0.1]
+n_neur1_ra    = [40]
+batchsz_ra    = [32]
+le_rate_ra    = [0.0001]
+l2_regu_ra    = [0.0001]
+d_layers_ra   = [1]
+n_neurd_ra    = [5]
 
 e_features = 'No'
 
@@ -115,50 +116,51 @@ for rets in rets_ra:
                     for le_rate in le_rate_ra:
                         for l2_regu in l2_regu_ra:
                             for n_neurd in n_neurd_ra:
-                                print(f"\nRets = {rets} | lags= {lags} | dropout= {dropout} | le_rate= {le_rate} | n_neur1= {n_neur1} | batchsz= {batchsz} | l2= {l2_regu} | n_neurd= {n_neurd} | optimizer= {optimizers}")
-                                
-                                n_neur2_ra = int(n_neur1 / 2)
-                                means_train_results = []
-                                
-                                for interval in train_interval:
+                                for d_layers in d_layers_ra:
+                                    print(f"\nRets = {rets} | lags= {lags} | dropout= {dropout} | le_rate= {le_rate} | n_neur1= {n_neur1} | batchsz= {batchsz} | l2= {l2_regu} | d_layeres = {d_layers} | n_neurd= {n_neurd} | optimizer= {optimizers}")
                                     
-                                    start_train, endin_train, start_valid, endin_valid = interval
-                                    start_train, endin_train, start_valid, endin_valid = [[start_train], [endin_train], [start_valid], [endin_valid]]
-                                    print("-" * 124)
-                                    print(f"Training with  : {n_years_train} years for training and {m_years_valid} years for validation. \nInterval dates : {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
-                                      
-                                    X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'TRVAL')
-                                    X_tests, y_tests                   = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'TESTS')
+                                    n_neur2_ra = int(n_neur1 / 2)
+                                    means_train_results = []
                                     
-                                    #BUILD & TRAIN MODEL
+                                    for interval in train_interval:
+                                        
+                                        start_train, endin_train, start_valid, endin_valid = interval
+                                        start_train, endin_train, start_valid, endin_valid = [[start_train], [endin_train], [start_valid], [endin_valid]]
+                                        print("-" * 124)
+                                        print(f"Training with  : {n_years_train} years for training and {m_years_valid} years for validation. \nInterval dates : {start_train[0]} to {endin_train[0]} and {start_valid[0]} to {endin_valid[0]}\n")
+                                          
+                                        X_train, X_valid, y_train, y_valid = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'TRVAL')
+                                        X_tests, y_tests                   = mod_process_data(df_preprocess, start_train, endin_train, start_valid, endin_valid, start_tests, endin_tests, lags, dim_arrays, n_features, 'TESTS')
+                                        
+                                        #BUILD & TRAIN MODEL
+                                        #------------------------------------------------------------------------------
+                                        model   = build_model(dropout, n_neur1, n_neur2_ra, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features, d_layers)
+                                        history = train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epochss, patient)
+                                    
+                                        
+                                        #EVALUATE MODEL
+                                        #------------------------------------------------------------------------------
+                                        dc_results = evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1, d_layers, n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,history)
+                                        means_train_results.append(dc_results)
+                                        print_results(dc_results)
+                                        
+                                        #PLOTS MODEL
+                                        #------------------------------------------------------------------------------
+                                        #plots_loss(history); plots_accu(history); plots_aucr(history)
+                                        
+                                        #MODEL PREDICTIONS
+                                        #------------------------------------------------------------------------------
+                                        tests_accuracy = tests_predictions(model, df_preprocess, X_tests, y_tests, start_tests, endin_tests) 
+                                        print('Tests_accuracy       :',tests_accuracy)
+    
+                                        #SAVE TESTS RESULTS
+                                        #------------------------------------------------------------------------------                           
+                                        save_tests_results(rets, lags, n_years_train, m_years_valid, start_train, start_tests, endin_tests, dropout, n_neur1, d_layers, n_neurd, batchsz, le_rate, l2_regu, optimizers, patient, tests_accuracy, loops_tests_results)
+                                        
+                                    
+                                    #TRAINING-CROSS-VALIDATION RESULTS
                                     #------------------------------------------------------------------------------
-                                    model   = build_model(dropout, n_neur1, n_neur2_ra, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features)
-                                    history = train_model(model, X_train, y_train, X_valid, y_valid, dropout, batchsz, epochss, patient)
-                                
-                                    
-                                    #EVALUATE MODEL
-                                    #------------------------------------------------------------------------------
-                                    dc_results = evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1, n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,history)
-                                    means_train_results.append(dc_results)
-                                    print_results(dc_results)
-                                    
-                                    #PLOTS MODEL
-                                    #------------------------------------------------------------------------------
-                                    #plots_loss(history); plots_accu(history); plots_aucr(history)
-                                    
-                                    #MODEL PREDICTIONS
-                                    #------------------------------------------------------------------------------
-                                    tests_accuracy = tests_predictions(model, df_preprocess, X_tests, y_tests, start_tests, endin_tests) 
-                                    print('Tests_accuracy       :',tests_accuracy)
-
-                                    #SAVE TESTS RESULTS
-                                    #------------------------------------------------------------------------------                           
-                                    save_tests_results(rets, lags, n_years_train, m_years_valid, start_train, start_tests, endin_tests, dropout, n_neur1, n_neurd, batchsz, le_rate, l2_regu, optimizers, patient, tests_accuracy, loops_tests_results)
-                                    
-                                
-                                #TRAINING-CROSS-VALIDATION RESULTS
-                                #------------------------------------------------------------------------------
-                                save_train_results(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_train_results,loops_train_results)
+                                    save_train_results(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,d_layers, n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_train_results,loops_train_results)
             
 print("*" * 124)
 os.system("afplay /System/Library/Sounds/Ping.aiff")

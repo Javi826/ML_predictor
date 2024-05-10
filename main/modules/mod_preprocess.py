@@ -21,8 +21,8 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags, rets, e_f
     df_preprocess                   = df_build_filter.copy()  
     returns_diff                    = df_preprocess['close'] - df_preprocess['close'].shift(1)
     df_preprocess['nday_direction'] = np.where(np.sign(returns_diff) > 0, 1, 0)
-   
-    df_preprocess['returns']        = np.log(df_preprocess['close'] / df_preprocess['close'].shift(rets)) 
+    #df_preprocess['close']          = diff_series(df_preprocess['close'], diff=30)
+    df_preprocess['returns']        = np.log(df_preprocess['close'] / df_preprocess['close'].shift(rets))
     df_preprocess['returns_diff']   = diff_series(df_preprocess['returns'], diff=30)
     df_preprocess['direction']      = np.where(df_preprocess['returns']>0, 1, 0)
     #df_preprocess['direction']      = df_preprocess['direction'].shift(1)
@@ -36,11 +36,13 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags, rets, e_f
         cols.append(col) 
         
     #FEATURING
+    
     #----------------------------------------------------------------------------------------------    
     if e_features == 'Yes':
         
-       df_preprocess['fet_momentun']   = df_preprocess['returns'].rolling(20).mean()
-       df_preprocess['fet_volatility'] = df_preprocess['returns'].rolling(20).std() 
+       df_preprocess['fet_momentun']   = diff_series(df_preprocess['returns'].rolling(20).mean(),diff=30)
+       df_preprocess['fet_volatility'] = diff_series(df_preprocess['returns'].rolling(20).std(),diff=30)
+       df_preprocess['fet_volume']     = diff_series(df_preprocess['volume'],diff=30)
         
        #Generar las columnas de retraso para las características adicionales
        fet_cols = [col for col in df_preprocess.columns if col.startswith('fet_')]

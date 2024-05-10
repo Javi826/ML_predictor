@@ -9,41 +9,42 @@ from main.paths.paths import results_path
 from keras.layers import Input, LSTM, concatenate, BatchNormalization, Dense
 from keras.models import Model
 from keras.optimizers import Adam
-#from keras.optimizers import RMSprop
 from keras.regularizers import l2
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-#from keras.layers import Dropout
+from keras.layers import Dropout
 
 
 
-def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features):
+def build_model(dropouts, n_neur1, n_neur2, n_neurd, le_rate, l2_regu, optimizers, lags,dim_arrays, n_features, d_layers):
     
 
     #INPUT LAYERS
     #------------------------------------------------------------------------------
     input_lags   = Input(shape=(dim_arrays, n_features), name='input_Lags')
     input_months = Input(shape=(12,), name='input_Months')
-
+    
     #LSTM LAYERS
     #------------------------------------------------------------------------------
     lstm_layer1 = LSTM(units=n_neur1, dropout=dropouts, name='LSTM1', return_sequences=True)(input_lags)
     lstm_layer2 = LSTM(units=n_neur2, dropout=dropouts, name='LSTM2')(lstm_layer1)
-    #lstm_layer2 = LSTM(units=n_neur2, dropout=dropouts, name='LSTM2', return_sequences=True)(lstm_layer1)
+    #lstm_layer2 = LSTM(units=n_neur2, name='LSTM2')(lstm_layer1)
+    
 
     #CONCATENATE MODEL + BATCHNORMALIZATION
     #------------------------------------------------------------------------------
     merge_concatenat = concatenate([lstm_layer2, input_months])
     batch_normalized = BatchNormalization()(merge_concatenat)
 
-    #DENSE LAYER
-    #------------------------------------------------------------------------------
-    #dense_layer1 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(batch_normalized)
+    #DENSE LAYERS
+    #-----------------------------------------------------------------------------
+    dense_layer = batch_normalized
     
-    dense_layer1 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(batch_normalized)
-    #dense_layer1 = Dropout(dropouts)(dense_layer1)
-    #dense_layer2 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(dense_layer1)
-    #dense_layer3 = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu))(dense_layer2)
-    output_layer = Dense(1,  activation='sigmoid', name='output')(dense_layer1)
+    for i in range(d_layers):
+       dense_layer = Dense(n_neurd, activation='relu', kernel_regularizer=l2(l2_regu), name=f'Dense_{i+1}')(dense_layer)
+       #dense_layer = Dropout(dropouts)(dense_layer)
+
+    output_layer = Dense(1,  activation='sigmoid', name='output')(dense_layer)
+    
 
     #MODEL DEFINITION + OPTIMIZER + COMPILE
     #------------------------------------------------------------------------------

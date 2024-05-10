@@ -89,7 +89,7 @@ def class_weights(y_train):
         
     return {0: w0, 1: w1}
       
-def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1, n_neurd,batchsz, le_rate,l2_regu, optimizers, patient, history):
+def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_valid, dropout, n_neur1, d_layers, n_neurd,batchsz, le_rate,l2_regu, optimizers, patient, history):
 
     ev_results = pd.DataFrame(history.history)
     ev_results.index += 1
@@ -126,6 +126,7 @@ def evaluate_history(lags, n_years_train, m_years_valid, start_train, start_vali
         'Start_valid': start_valid[0],
         'Dropout': dropout,
         'Neur_1': n_neur1,
+        'Dense_layers':d_layers,
         'Neur_d': n_neurd,
         'Batch Size': batchsz,
         'Learning Rate': le_rate,
@@ -162,7 +163,7 @@ def print_results(ev_results):
    print('\n')
     
 
-def train_results(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
+def train_results(lags, n_years_train, m_years_valid, start_train, start_valid, dropout,n_neur1,d_layers, n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,means_training_results):
     
     columns_mean = ['best_train_loss',       'best_train_accu',       'best_train_AUC',  'best_train_epoch_loss', 'best_train_epoch_accu',
                     'best_train_epoch_AUC',  'best_valid_loss',       'best_valid_accu', 'best_valid_AUC',        'best_valid_epoch_loss',
@@ -199,6 +200,7 @@ def train_results(lags, n_years_train, m_years_valid, start_train, start_valid, 
         'Start_valid': start_valid[0],
         'Dropout': dropout,
         'Neuro_1': n_neur1,
+        'd_layers':d_layers,
         'Neuro_d': n_neurd,
         'Batch Size': batchsz,
         'Learning Rate': le_rate,
@@ -225,7 +227,7 @@ def train_results(lags, n_years_train, m_years_valid, start_train, start_valid, 
         'mean_last_valid_AUC': mean_last_valid_AUC
     }
 
-def tests_results(rets,lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
+def tests_results(rets,lags, n_years_train, m_years_valid, start_tests, endin_tests, dropout,n_neur1,d_layers, n_neurd, batchsz,le_rate,l2_regu, optimizers,patient,tests_accuracy):
     
 
     return {
@@ -237,6 +239,7 @@ def tests_results(rets,lags, n_years_train, m_years_valid, start_tests, endin_te
         'endin_tests': endin_tests[0],
         'Dropout': dropout,
         'Neuro_1': n_neur1,
+        'd_layers':d_layers,
         'Neuro_d': n_neurd,
         'Batch Size': batchsz,
         'Learning Rate': le_rate,

@@ -33,12 +33,12 @@ def mod_pipeline(df_preprocess, start_train, endin_train, start_valid, endin_val
     dlags_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('lag')]
     month_columns_selected = [col for col in df_date_lag_dir.columns if col.startswith('month')]
     
-    train_techi_name    = f"train_data_techi{start_train_i}.xlsx"
+    train_techi_name    = f"train_data_techi_{start_train_i}.xlsx"
     train_excel_path    = os.path.join(path_base, folder_zinputs_model, train_techi_name)
     train_data_selected = train_data[dlags_columns_selected]
     train_data_selected.to_excel(train_excel_path, index=False)
     
-    train_oneh_name     = f"train_data_oneh{start_train_i}.xlsx"
+    train_oneh_name     = f"train_data_oneh_{start_train_i}.xlsx"
     train_excel_path    = os.path.join(path_base, folder_zinputs_model, train_oneh_name)
     train_data_selected = train_data[month_columns_selected]
     train_data_selected.to_excel(train_excel_path, index=False)
