@@ -149,7 +149,7 @@ for rets in rets_ra:
                                     #MODEL PREDICTIONS
                                     #------------------------------------------------------------------------------
                                     tests_accuracy = tests_predictions(model, df_preprocess, X_tests, y_tests, start_tests, endin_tests) 
-                                    print('Tests_accuracy:',tests_accuracy)
+                                    print('Tests_accuracy       :',tests_accuracy)
 
                                     #SAVE TESTS RESULTS
                                     #------------------------------------------------------------------------------                           

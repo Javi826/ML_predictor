@@ -33,7 +33,13 @@ def mod_backtesting(tests_data,y_tests,y_pred_bin,start_tests_i, endin_tests_i):
     #---------------------------------------------------------------------------------------------------   
     column_choose = 'y_pred_bin'
     
-    df_signals.loc[0, [column_choose]] = 0
+    total_sum_next_five = df_signals[column_choose].iloc[1:6].sum()
+    print(total_sum_next_five)
+    
+    if total_sum_next_five > 2:
+       df_signals.loc[0, column_choose] = 0
+    
+    
     df_signals['signal'] = np.select(
         [(df_signals[column_choose] == 1) & (df_signals[column_choose].shift(-1) == 0),
          (df_signals[column_choose] == 1) & (df_signals[column_choose].shift(-1) == 1),
@@ -75,12 +81,15 @@ def mod_backtesting(tests_data,y_tests,y_pred_bin,start_tests_i, endin_tests_i):
     price_first           = tests_data['close'].iloc[0]
     price_lasts           = tests_data['close'].iloc[-1]
     total_return_buy_hold = (price_lasts - price_first) / price_first * 100
+    n_operations = df_backtesting.shape[0]
     
     # Imprimir los valores con dos decimales
-    print("Initial capital value:", "{:.2f}".format(initial_capital))
-    print("Final  capital value :", "{:.2f}".format(last_capital))
+    print("Initl capital value  :", "{:.2f}".format(initial_capital))
+    print("Final capital value  :", "{:.2f}".format(last_capital))
     print("Rentability buy&hold :", "{:.2f}".format(total_return_buy_hold), "%")
     print("Rentability strategy :", "{:.2f}".format(percentage_change), "%")
+    print("Number of operations :", n_operations)
+
 
     
     excel_back_path = os.path.join(path_base, folder_tests_results, f"df_backtesting_{start_tests_i}.xlsx")

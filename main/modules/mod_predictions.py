@@ -28,7 +28,7 @@ def tests_predictions(model, df_preprocess, X_tests, y_tests, start_tests, endin
     y_pred_bin   = np.squeeze(y_pred_bin)
     y_pred_bin   = pd.Series(y_pred_bin)
     
-    mod_backtesting(tests_data,y_tests,y_pred_bin,start_tests_i,endin_tests_i)   
+    #mod_backtesting(tests_data,y_tests,y_pred_bin,start_tests_i,endin_tests_i)   
 
     # CTest accuracy
     tests_accuracy = accuracy_score(y_tests, y_pred_bin) 
