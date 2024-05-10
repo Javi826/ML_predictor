@@ -17,91 +17,75 @@ def mod_backtesting(tests_data,y_tests,y_pred_bin,start_tests_i, endin_tests_i):
     df_recove_data['date']       = tests_data['date']
     df_recove_data['close']      = tests_data['close']
     df_recove_data['open']       = tests_data['open']
-    df_recove_data['market_ret'] = np.log(tests_data['close'].pct_change())
+    df_recove_data['returns']    = tests_data['returns']
+    df_recove_data['market_ret'] = (tests_data['close'].pct_change())
+    df_recove_data['returns']    = tests_data['returns']
    
     df_predictions = pd.DataFrame({'y_tests': y_tests,'y_pred_bin': y_pred_bin})    
     df_recove_data.reset_index(drop=True, inplace=True)
     df_predictions.reset_index(drop=True, inplace=True)
     
-    df_backtesting                = pd.concat([df_recove_data, df_predictions], axis=1)
-    df_backtesting ['actual_ret'] = df_backtesting['market_ret'] * df_backtesting['y_tests'].shift(1)
-    df_backtesting ['strate_ret'] = df_backtesting['market_ret'] * df_backtesting['y_pred_bin'].shift(1) 
+    df_signals                = pd.concat([df_recove_data, df_predictions], axis=1)
+    #df_backtesting ['actual_ret'] = df_backtesting['market_ret'] * df_backtesting['y_tests'].shift(1)
+    #df_backtesting ['strate_ret'] = df_backtesting['market_ret'] * df_backtesting['y_pred_bin'].shift(1)
     
-    # SAVE FILE
-    excel_back_path = os.path.join(path_base, folder_tests_results, f"y_backtesting_{start_tests_i}.xlsx")
-    df_backtesting.to_excel(excel_back_path, index=False)    
+    #SIGNAL
+    #---------------------------------------------------------------------------------------------------   
+    column_choose = 'y_pred_bin'
+    
+    df_signals.loc[0, [column_choose]] = 0
+    df_signals['signal'] = np.select(
+        [(df_signals[column_choose] == 1) & (df_signals[column_choose].shift(-1) == 0),
+         (df_signals[column_choose] == 1) & (df_signals[column_choose].shift(-1) == 1),
+         (df_signals[column_choose] == 0) & (df_signals[column_choose].shift(-1) == 0), 
+         (df_signals[column_choose] == 0) & (df_signals[column_choose].shift(-1) == 1)], 
+        [-1, 0, 0, 1], default=np.nan)
 
+      
+    # SAVE FILE
+    #---------------------------------------------------------------------------------------------------
+    excel_signals_path = os.path.join(path_base, folder_tests_results, f"df_market_signals_{start_tests_i}.xlsx")
+    df_signals.to_excel(excel_signals_path, index=False) 
+    
+    #BACKTESTING
+    #---------------------------------------------------------------------------------------------------
+    
+    df_backtesting = df_signals[df_signals['signal'] != 0].copy()
+    
+    df_backtesting.loc[df_backtesting['signal'] ==  1, 'oper_rent'] = 0
+    df_backtesting.loc[df_backtesting['signal'] == -1, 'oper_rent'] = df_backtesting['close'].pct_change()
+    
+    comision = 0.1
+    
+    df_backtesting.loc[df_backtesting['oper_rent'] != 0, 'oper_rent_gross'] = df_backtesting['oper_rent']
+    df_backtesting.loc[df_backtesting['oper_rent'] != 0, 'oper_rent_nets']  = df_backtesting['oper_rent'] - (comision/100)
+    
+    initial_capital = 10000
+    df_backtesting['gross_capital'] = initial_capital
+    df_backtesting['nets_capital']  = initial_capital
+    
+    
+    df_backtesting['gross_capital'] = (df_backtesting['oper_rent_gross'] + 1).cumprod() * initial_capital
+    df_backtesting['nets_capital']  = (df_backtesting['oper_rent_nets']  + 1).cumprod() * initial_capital
+    
+    last_capital = df_backtesting['nets_capital'].dropna().iloc[-1]
+    
+    percentage_change = ((last_capital - initial_capital) / initial_capital) * 100
+    
+    price_first           = tests_data['close'].iloc[0]
+    price_lasts           = tests_data['close'].iloc[-1]
+    total_return_buy_hold = (price_lasts - price_first) / price_first * 100
+    
+    # Imprimir los valores con dos decimales
+    print("Initial capital value:", "{:.2f}".format(initial_capital))
+    print("Final  capital value :", "{:.2f}".format(last_capital))
+    print("Rentability buy&hold :", "{:.2f}".format(total_return_buy_hold), "%")
+    print("Rentability strategy :", "{:.2f}".format(percentage_change), "%")
+
+    
+    excel_back_path = os.path.join(path_base, folder_tests_results, f"df_backtesting_{start_tests_i}.xlsx")
+    df_backtesting.to_excel(excel_back_path, index=False)
+
+        
     return
 
-############################################################################################################
-    # Plot del histograma de la suma acumulativa
-    cumulative_returns = df_backtesting[['strate_ret', 'actual_ret']].cumsum()
-    cumulative_returns.hist(bins=50, figsize=(10, 6))
-    plt.title('Histogram of Cumulative Returns')
-    plt.xlabel('Cumulative Returns')
-    plt.ylabel('Frequency')
-    plt.grid(True)
-    plt.show()
-    
-    # Plot the cumulative sum over time
-    cumulative_returns.plot(figsize=(10, 6))
-    plt.title('Cumulative Returns Over Time')
-    plt.xlabel('Time Index')
-    plt.ylabel('Cumulative Returns')
-    plt.grid(True)
-    plt.show()
-    
-    # Calculate total accumulated return
-    total_return_strategy = df_backtesting['strate_ret'].sum()
-    total_return_actual   = df_backtesting['actual_ret'].sum()
-    
-    # Calculate mean return per time period
-    mean_return_strategy = df_backtesting['strate_ret'].mean()
-    mean_return_actual   = df_backtesting['actual_ret'].mean()
-    
-    # Calculate volatility
-    volatility_strategy = df_backtesting['strate_ret'].std()
-    volatility_actual   = df_backtesting['actual_ret'].std()
-    
-    # Assuming risk-free rate is 0 for simplicity
-    risk_free_rate = 0.0
-    
-    # Calculate Sharpe ratio
-    sharpe_ratio_strategy = (mean_return_strategy - risk_free_rate) / volatility_strategy
-    sharpe_ratio_actual   = (mean_return_actual - risk_free_rate) / volatility_actual
-    
-    # Calculate max drawdown
-    max_drawdown_strategy = (df_backtesting['strate_ret'].cumsum() - df_backtesting['strate_ret'].cumsum().cummax()).min()
-    max_drawdown_actual   = (df_backtesting['actual_ret'].cumsum() - df_backtesting['actual_ret'].cumsum().cummax()).min()
-    
-    # Calculate Calmar ratio
-    calmar_ratio_strategy = total_return_strategy / abs(max_drawdown_strategy)
-    calmar_ratio_actual   = total_return_actual / abs(max_drawdown_actual)
-    
-    # Print results
-     
-    print('\n')
-    print("Total accumulated return for strategy   :", round(total_return_strategy * 100, 2))
-    print("Total accumulated return for actual     :", round(total_return_actual * 100, 2))
-    print("Mean return per time period for strategy:", round(mean_return_strategy * 100, 2))
-    print("Mean return per time period for actual  :", round(mean_return_actual * 100, 2))
-    print("Volatility for strategy                 :", round(volatility_strategy, 2))
-    print("Volatility for actual                   :", round(volatility_actual, 2))
-    print("Sharpe ratio for strategy               :", round(sharpe_ratio_strategy * 100, 2))
-    print("Sharpe ratio for actual                 :", round(sharpe_ratio_actual * 100, 2))
-    print("Max drawdown for strategy               :", round(max_drawdown_strategy, 2))
-    print("Max drawdown for actual                 :", round(max_drawdown_actual, 2))
-    print("Calmar ratio for strategy               :", round(calmar_ratio_strategy, 2))
-    print("Calmar ratio for actual                 :", round(calmar_ratio_actual, 2))
-    
-    price_first = tests_data['close'].iloc[0]
-    price_lasts = tests_data['close'].iloc[-1]
-    
-    print(price_first)
-    print(price_lasts)
-    
-    # Calcular el retorno acumulado para la estrategia de "comprar y mantener"
-    total_return_buy_and_hold = (price_lasts - price_first) / price_first * 100
-    
-    # Mostrar el retorno acumulado
-    print("Total accumulated return for Buy and Hold strategy:", total_return_buy_and_hold)

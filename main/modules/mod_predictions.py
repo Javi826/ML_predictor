@@ -21,7 +21,6 @@ def tests_predictions(model, df_preprocess, X_tests, y_tests, start_tests, endin
     tests_data      = df_date_lag_dir[(df_date_lag_dir['date'] > start_tests_i) & (df_date_lag_dir['date'] <= endin_tests_i)]
 
     y_pred     = model.predict(X_tests)
-    print(y_pred)
     y_pred_bin = (y_pred > 0.5).astype(int)
 
     # Prepare data for DataFrame

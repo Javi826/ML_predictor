@@ -12,7 +12,7 @@ from keras.optimizers import Adam
 #from keras.optimizers import RMSprop
 from keras.regularizers import l2
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.layers import Dropout
+#from keras.layers import Dropout
 
 
 

@@ -61,7 +61,7 @@ df_build          = mod_data_build(df_data,build_start_date,build_endin_date)
 #VARIABLES
 #------------------------------------------------------------------------------
 optimizers  = 'Adam'
-epochss     = 50
+epochss     = 10
 patient     = 25
 #rets_ra    = [10,30]  
 #lags_ra    = [10,20]

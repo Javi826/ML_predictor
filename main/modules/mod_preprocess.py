@@ -24,7 +24,9 @@ def mod_preprocess (df_build,prepro_start_date,prepro_endin_date,lags, rets, e_f
    
     df_preprocess['returns']        = np.log(df_preprocess['close'] / df_preprocess['close'].shift(rets)) 
     df_preprocess['returns_diff']   = diff_series(df_preprocess['returns'], diff=30)
-    df_preprocess['direction']      = np.where(df_preprocess['returns']>0, 1, 0) 
+    df_preprocess['direction']      = np.where(df_preprocess['returns']>0, 1, 0)
+    #df_preprocess['direction']      = df_preprocess['direction'].shift(1)
+    
     
     lags = lags
     cols = []
