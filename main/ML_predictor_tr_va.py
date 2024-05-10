@@ -25,7 +25,7 @@ import pandas as pd
 warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
 
 start_time = time.time()
-#VISUALIZATION PRINTSd
+#VISUALIZATION PRINTS
 pd.set_option('display.max_columns', None)
 pd.set_option('display.expand_frame_repr', False)
 
